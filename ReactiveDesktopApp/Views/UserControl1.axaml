@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:vm="using:ReactiveDesktopApp.ViewModels"
+			 x:DataType="vm:UserControl1ViewModel"
+             x:Class="ReactiveDesktopApp.UserControl1">
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code-->
+		<vm:UserControl1ViewModel />
+	</Design.DataContext>
+	<StackPanel>
+		<Label>Task name</Label>
+	    <TextBox Text="{Binding TaskName}"></TextBox>
+		<TextBlock Text="{Binding TaskName}"></TextBlock>
+	</StackPanel>
+</UserControl>

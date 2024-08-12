@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:m="clr-namespace:AvaloniaApplication1.Models"
+             xmlns:vm="clr-namespace:AvaloniaApplication1.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AvaloniaApplication1.Views.MainView"
+             x:DataType="vm:MainViewModelForDesigner">
+
+	<Design.DataContext>
+		<vm:MainViewModelForDesigner />
+	</Design.DataContext>
+
+	<StackPanel>
+		<TextBlock Text="{Binding AsyncText^, FallbackValue='loading...'}"></TextBlock>
+		<Button Content="Reload" Command="{Binding ReloadAsyncTextCommand}"></Button>
+		<ListBox ItemsSource="{Binding Transactions^}">
+			<ListBox.ItemTemplate>
+				<DataTemplate DataType="m:Transaction">
+					<StackPanel Orientation="Horizontal" Spacing="20">
+						<TextBlock Text="{Binding Date}" />
+						<TextBlock Text="{Binding Category}" />
+						<TextBlock Text="{Binding Merchant}" />
+						<TextBlock Text="{Binding Amount}" />
+					</StackPanel>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>	
+		
+	</StackPanel>
+	
+	
+</UserControl>
