@@ -1,61 +1,72 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:m="clr-namespace:AvaloniaApplication1.Models"
-             xmlns:vm="clr-namespace:AvaloniaApplication1.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="AvaloniaApplication1.Views.MainView"
-             x:DataType="vm:MainViewModelForDesigner">
+<UserControl x:Class="AvaloniaApplication1.Views.MainView" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:m="clr-namespace:AvaloniaApplication1.Models" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vm="clr-namespace:AvaloniaApplication1.ViewModels" d:DesignHeight="450" d:DesignWidth="800" x:DataType="vm:MainViewModelForDesigner" mc:Ignorable="d">
 
-	<Design.DataContext>
-		<vm:MainViewModelForDesigner />
-	</Design.DataContext>
+    <Design.DataContext>
+        <vm:MainViewModelForDesigner />
+    </Design.DataContext>
 
 
 
-	<StackPanel>
-		<TextBlock Text="{Binding AsyncText^, FallbackValue='loading...'}"></TextBlock>
-		<Button Content="Reload" Command="{Binding ReloadAsyncTextCommand}"></Button>
+    <StackPanel>
+        <StackPanel.Styles>
+            <Style Selector="Grid.loading">
+                <Style.Animations>
+                    <Animation IterationCount="1000" Duration="0:0:3">
+                        <KeyFrame Cue="0%">
+                            <Setter Property="Opacity" Value="0.0" />
+                        </KeyFrame>
+                        <KeyFrame Cue="50%">
+                            <Setter Property="Opacity" Value="1.0" />
+                        </KeyFrame>
+                        <KeyFrame Cue="100%">
+                            <Setter Property="Opacity" Value="0.0" />
+                        </KeyFrame>
+                    </Animation>
+                </Style.Animations>
+            </Style>
+        </StackPanel.Styles>
 
-		<StackPanel Spacing="10" HorizontalAlignment="Left" IsVisible="{Binding IsLoadingTranactions}">
-			<StackPanel.Styles>
-				<Style Selector="Svg">
-					<Style.Animations>
-						<Animation Duration="0:0:3" IterationCount="1000">
-							<KeyFrame Cue="0%">
-								<Setter Property="Opacity" Value="0.0"/>
-							</KeyFrame>
-							<KeyFrame Cue="50%">
-								<Setter Property="Opacity" Value="1.0"/>
-							</KeyFrame>
-							<KeyFrame Cue="100%">
-								<Setter Property="Opacity" Value="0.0"/>
-							</KeyFrame>
-						</Animation>
-					</Style.Animations>
-				</Style>
-			</StackPanel.Styles>
-			<Svg Path="/Assets/gray_rectangle.drawio.svg" Height="30" Stretch="Fill" OpacityMask="White" />
-			<Svg Path="/Assets/gray_rectangle.drawio.svg" Height="30" Stretch="Fill" OpacityMask="Black" />
-			<Svg Path="/Assets/gray_rectangle.drawio.svg" Height="30" Stretch="Fill" OpacityMask="White" />
-		</StackPanel>
+        <TextBlock Text="{Binding AsyncText^, FallbackValue='loading...'}" />
+        <Button Command="{Binding ReloadAsyncTextCommand}" Content="Reload" />
+
+        <Grid Classes="loading" ColumnDefinitions="*,*,3*,*"
+              IsVisible="{Binding IsLoadingTranactions}"
+              RowDefinitions="auto,auto,auto">
+            <Grid.Styles>
+                <Style Selector="TextBlock">
+                    <Setter Property="Background" Value="#cccccc" />
+                    <Setter Property="Foreground" Value="#cccccc" />
+                    <Setter Property="Margin" Value="5" />
+                </Style>
+            </Grid.Styles>
+            <TextBlock Grid.Row="0" Grid.Column="0" />
+            <TextBlock Grid.Row="0" Grid.Column="1" />
+            <TextBlock Grid.Row="0" Grid.Column="2" />
+            <TextBlock Grid.Row="0" Grid.Column="3" />
+            <TextBlock Grid.Row="1" Grid.Column="0" />
+            <TextBlock Grid.Row="1" Grid.Column="1" />
+            <TextBlock Grid.Row="1" Grid.Column="2" />
+            <TextBlock Grid.Row="1" Grid.Column="3" />
+            <TextBlock Grid.Row="2" Grid.Column="0" />
+            <TextBlock Grid.Row="2" Grid.Column="1" />
+            <TextBlock Grid.Row="2" Grid.Column="2" />
+            <TextBlock Grid.Row="2" Grid.Column="3" />
+        </Grid>
 
 
-		<ListBox ItemsSource="{Binding Transactions^}" IsVisible="{Binding !IsLoadingTranactions}">
-			<ListBox.ItemTemplate>
-				<DataTemplate DataType="m:Transaction">
-					<StackPanel Orientation="Horizontal" Spacing="20">
-						<TextBlock Text="{Binding Date}" />
-						<TextBlock Text="{Binding Category}" />
-						<TextBlock Text="{Binding Merchant}" />
-						<TextBlock Text="{Binding Amount}" />
-					</StackPanel>
-				</DataTemplate>
-			</ListBox.ItemTemplate>
-		</ListBox>
+        <ListBox IsVisible="{Binding !IsLoadingTranactions}" ItemsSource="{Binding Transactions^}">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="m:Transaction">
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="{Binding Date}" />
+                        <TextBlock Text="{Binding Category}" />
+                        <TextBlock Text="{Binding Merchant}" />
+                        <TextBlock Text="{Binding Amount}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
-	</StackPanel>
+    </StackPanel>
 
 
 </UserControl>
