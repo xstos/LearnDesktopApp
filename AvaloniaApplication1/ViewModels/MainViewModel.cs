@@ -41,6 +41,11 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private Task<Transaction[]> transactions;
+
+    [ObservableProperty]
+    private bool isLoadingTranactions = true;
+
+
     /// <summary>
     /// The value is null in designer mode
     /// </summary>
@@ -50,17 +55,35 @@ public partial class MainViewModel : ObservableObject
     {
         _transactionRepository = transactionRepository;
         AsyncText = FirstLoadAsyncText();
-        if (_transactionRepository is not null)
+        transactions = LoadTransactions();
+    }
+
+    public virtual async Task<Transaction[]> LoadTransactions()
+    {
+        IsLoadingTranactions = true;
+        try
         {
-            transactions = _transactionRepository.GetTransactions();
+            return await _transactionRepository!.GetTransactions();
+        }
+        finally
+        {
+            IsLoadingTranactions = false;
         }
     }
 }
+
 public sealed class MainViewModelForDesigner : MainViewModel
 {
     public MainViewModelForDesigner() : base(default)
     {
-        Transactions = Task.FromResult<Transaction[]>([
+
+        AsyncText = Task.FromResult("Fake external service result for Designer Mode");
+        IsLoadingTranactions = false;
+    }
+    public override async Task<Transaction[]> LoadTransactions()
+    {
+        await Task.Yield();
+        return [
             new Transaction
             {
                 Id = 1,
@@ -75,7 +98,6 @@ public sealed class MainViewModelForDesigner : MainViewModel
                 Merchant = "Sample Merchant 2",
                 Date = DateTime.Now
             }
-        ]);
-        AsyncText = Task.FromResult("Fake external service result for Designer Mode");
+        ];
     }
 }
