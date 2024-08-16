@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaloniaApplication1.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableRecipient
 {
     #region async text
     [ObservableProperty]
@@ -43,8 +43,11 @@ public partial class MainViewModel : ObservableObject
     private Task<Transaction[]> transactions;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LoadingLabel))]
+    [NotifyPropertyChangedRecipients]
     private bool isLoadingTranactions = true;
 
+    public string LoadingLabel => IsLoadingTranactions ? "Computed Property: Loading..." : "Computed Property: Loaded";
 
     /// <summary>
     /// The value is null in designer mode
@@ -77,7 +80,7 @@ public sealed class MainViewModelForDesigner : MainViewModel
     public MainViewModelForDesigner() : base(default)
     {
 
-        AsyncText = Task.FromResult("Fake external service result for Designer Mode");
+        AsyncText = Task.FromResult("Async text for Designer Mode");
         IsLoadingTranactions = false;
     }
     public override async Task<Transaction[]> LoadTransactions()
