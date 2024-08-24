@@ -1,6 +1,6 @@
 <UserControl x:Class="AvaloniaApplication1.Views.MainView" xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:m="using:AvaloniaApplication1.Models" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:AvaloniaApplication1" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:v="using:AvaloniaApplication1.Views" xmlns:vm="using:AvaloniaApplication1.ViewModels"
              d:DesignHeight="450" d:DesignWidth="800"
              x:DataType="vm:MainViewModelForDesigner" mc:Ignorable="d">
@@ -9,73 +9,10 @@
         <vm:MainViewModelForDesigner />
     </Design.DataContext>
 
-    <StackPanel>
-        <v:StatusBar StatusBarMessage="Message property set in xaml" />
-        <TextBlock Text="{Binding AsyncText^, FallbackValue='loading...'}" />
-        <Button Command="{Binding ReloadAsyncTextCommand}" Content="Reload" />
+    <v:WalletView />
 
-        <TextBlock Text="{Binding LoadingLabel}" />
-
-        <Grid Classes="loading" ColumnDefinitions="*,*,3*,*"
-              IsVisible="{Binding IsLoadingTranactions}"
-              RowDefinitions="auto,auto,auto">
-
-            <TextBlock Grid.Row="0" Grid.Column="0" />
-            <TextBlock Grid.Row="0" Grid.Column="1" />
-            <TextBlock Grid.Row="0" Grid.Column="2" />
-            <TextBlock Grid.Row="0" Grid.Column="3" />
-
-            <TextBlock Grid.Row="1" Grid.Column="0" />
-            <TextBlock Grid.Row="1" Grid.Column="1" />
-            <TextBlock Grid.Row="1" Grid.Column="2" />
-            <TextBlock Grid.Row="1" Grid.Column="3" />
-
-            <TextBlock Grid.Row="2" Grid.Column="0" />
-            <TextBlock Grid.Row="2" Grid.Column="1" />
-            <TextBlock Grid.Row="2" Grid.Column="2" />
-            <TextBlock Grid.Row="2" Grid.Column="3" />
-
-            <Grid.Styles>
-                <Style Selector="TextBlock">
-                    <Setter Property="Background" Value="#cccccc" />
-                    <Setter Property="Foreground" Value="#cccccc" />
-                    <Setter Property="Margin" Value="5" />
-                </Style>
-            </Grid.Styles>
-        </Grid>
-
-
-        <ListBox IsVisible="{Binding !IsLoadingTranactions}" ItemsSource="{Binding Transactions^}">
-            <ListBox.ItemTemplate>
-                <DataTemplate DataType="m:Transaction">
-                    <StackPanel Orientation="Horizontal" Spacing="20">
-                        <TextBlock Text="{Binding Date}" />
-                        <TextBlock Text="{Binding Category}" />
-                        <TextBlock Text="{Binding Merchant}" />
-                        <TextBlock Text="{Binding Amount}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-
-        <StackPanel.Styles>
-            <Style Selector="Grid.loading">
-                <Style.Animations>
-                    <Animation IterationCount="1000" Duration="0:0:3">
-                        <KeyFrame Cue="0%">
-                            <Setter Property="Opacity" Value="0.0" />
-                        </KeyFrame>
-                        <KeyFrame Cue="50%">
-                            <Setter Property="Opacity" Value="1.0" />
-                        </KeyFrame>
-                        <KeyFrame Cue="100%">
-                            <Setter Property="Opacity" Value="0.0" />
-                        </KeyFrame>
-                    </Animation>
-                </Style.Animations>
-            </Style>
-        </StackPanel.Styles>
-    </StackPanel>
-
+    <!--<UserControl.DataTemplates>
+        <local:ViewLocator />
+    </UserControl.DataTemplates>-->
 
 </UserControl>

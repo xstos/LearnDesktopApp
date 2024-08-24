@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 17
+# Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveDesktopApp", "ReactiveDesktopApp\ReactiveDesktopApp.csproj", "{562515CC-0F4E-4107-8BCF-5AA944804C7A}"
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaApplication1.Desktop", "AvaloniaApplication1.Desktop\AvaloniaApplication1.Desktop.csproj", "{C4CAF8AC-55BE-41F4-BFBE-E265BF572AE5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaApplication1Tests", "AvaloniaApplication1Tests\AvaloniaApplication1Tests.csproj", "{8AB4F4ED-3DA5-4F70-A86C-098E969F2AD3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaDemoDI", "AvaloniaDemoDI\AvaloniaDemoDI.csproj", "{E6101A45-F022-4639-85F5-76D544A3FEAB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaNavigationDemo", "AvaloniaNavigationDemo\AvaloniaNavigationDemo.csproj", "{2EA9DF87-4425-43B7-9485-0BE08CBF8106}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +49,14 @@ Global
 		{8AB4F4ED-3DA5-4F70-A86C-098E969F2AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AB4F4ED-3DA5-4F70-A86C-098E969F2AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AB4F4ED-3DA5-4F70-A86C-098E969F2AD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6101A45-F022-4639-85F5-76D544A3FEAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6101A45-F022-4639-85F5-76D544A3FEAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6101A45-F022-4639-85F5-76D544A3FEAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6101A45-F022-4639-85F5-76D544A3FEAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EA9DF87-4425-43B7-9485-0BE08CBF8106}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EA9DF87-4425-43B7-9485-0BE08CBF8106}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EA9DF87-4425-43B7-9485-0BE08CBF8106}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EA9DF87-4425-43B7-9485-0BE08CBF8106}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

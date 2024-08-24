@@ -17,7 +17,6 @@ public partial class StatusBar : UserControl
 
     public StatusBar()
     {
-        DataContext = new StatusBarViewModelForDesigner();
         InitializeComponent();
     }
 }

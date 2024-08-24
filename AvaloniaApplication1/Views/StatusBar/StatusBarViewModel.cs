@@ -16,7 +16,7 @@ public partial class StatusBarViewModel : ObservableRecipient, IRecipient<Proper
 
     public void Receive(PropertyChangedMessage<bool> message)
     {
-        if (message.Sender is MainViewModel && message.PropertyName == nameof(MainViewModel.IsLoadingTranactions))
+        if (message.Sender is WalletViewModel && message.PropertyName == nameof(WalletViewModel.IsLoadingTranactions))
         {
             Status = message.NewValue ? "Status: Loading" : "Status: Loaded";
         }
