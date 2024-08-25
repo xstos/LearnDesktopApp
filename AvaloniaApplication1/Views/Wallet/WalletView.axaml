@@ -8,10 +8,6 @@
     <Design.DataContext>
         <vm:WalletViewModelForDesigner />
     </Design.DataContext>
-    <UserControl.DataContext>
-        <vm:WalletViewModel />
-    </UserControl.DataContext>
-
 
     <StackPanel>
         <v:StatusBar StatusBarMessage="Message property set in xaml" />

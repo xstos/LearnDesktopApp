@@ -23,4 +23,10 @@
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.2" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\Menu\MenuView.axaml.cs">
+	    <DependentUpon>MenuView.axaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 </Project>

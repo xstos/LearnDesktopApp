@@ -3,16 +3,18 @@
              xmlns:local="using:AvaloniaApplication1" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:v="using:AvaloniaApplication1.Views" xmlns:vm="using:AvaloniaApplication1.ViewModels"
              d:DesignHeight="450" d:DesignWidth="800"
-             x:DataType="vm:MainViewModelForDesigner" mc:Ignorable="d">
+             x:DataType="vm:MainViewModel" mc:Ignorable="d">
 
-    <Design.DataContext>
-        <vm:MainViewModelForDesigner />
-    </Design.DataContext>
-
-    <v:WalletView />
-
-    <!--<UserControl.DataTemplates>
-        <local:ViewLocator />
-    </UserControl.DataTemplates>-->
+    <TabControl Margin="5">
+        <TabItem Header="Wallet">
+            <ContentControl Content="{Binding WalletViewModel}" />
+        </TabItem>
+        <TabItem Header="Card">
+            <ContentControl Content="{Binding CardViewModel}" />
+        </TabItem>
+        <TabItem Header="Menu">
+            <ContentControl Content="{Binding MenuViewModel}" />
+        </TabItem>
+    </TabControl>
 
 </UserControl>
