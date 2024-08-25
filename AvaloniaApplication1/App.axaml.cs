@@ -23,7 +23,8 @@ public partial class App : Application
         DisableAvaloniaDataAnnotationValidation();
 
         ServiceCollection services = new();
-        services.AddApplicationServices();
+        services.AddLoggingService()
+            .AddApplicationServices();
         ServiceProvider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

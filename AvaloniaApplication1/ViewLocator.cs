@@ -43,6 +43,7 @@ public class ViewLocator : IDataTemplate
             var control = App.ServiceProvider.GetService(controlType1);
             if (control is Control c)
             {
+                Console.WriteLine($"GetService({controlFullTypeName})");
                 return c;
             }
         }

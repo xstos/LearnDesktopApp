@@ -1,6 +1,7 @@
 ﻿using AutoBogus;
 using AutoBogus.Conventions;
 using Bogus;
+using Microsoft.Extensions.Logging;
 
 namespace AvaloniaApplication1.Models;
 
@@ -8,7 +9,7 @@ public interface ITransactionRepository
 {
     Task<Transaction[]> GetTransactions();
 }
-public class TransactionRepository : ITransactionRepository
+public class TransactionRepository(ILogger<ITransactionRepository> _logger) : ITransactionRepository
 {
     private readonly Faker<Transaction> _faker = new AutoFaker<Transaction>()
         .Configure(builder => builder.WithConventions())
@@ -18,6 +19,7 @@ public class TransactionRepository : ITransactionRepository
         ;
     public async Task<Transaction[]> GetTransactions()
     {
+        _logger.LogInformation("GetTransaction()");
         await Task.Delay(3000);
         return _faker.GenerateBetween(10, 30).ToArray();
     }

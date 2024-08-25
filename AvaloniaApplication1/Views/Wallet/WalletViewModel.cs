@@ -2,10 +2,11 @@
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace AvaloniaApplication1.ViewModels;
 
-public partial class WalletViewModel : ObservableRecipient
+public partial class WalletViewModel : ObservableRecipient, IRecipient<ReloadTransactionRequest>
 {
     #region async text
     [ObservableProperty]
@@ -59,9 +60,10 @@ public partial class WalletViewModel : ObservableRecipient
         _transactionRepository = transactionRepository;
         AsyncText = FirstLoadAsyncText();
         transactions = LoadTransactions();
+        IsActive = true;
     }
 
-    public virtual async Task<Transaction[]> LoadTransactions()
+    protected virtual async Task<Transaction[]> LoadTransactions()
     {
         IsLoadingTranactions = true;
         try
@@ -73,6 +75,15 @@ public partial class WalletViewModel : ObservableRecipient
             IsLoadingTranactions = false;
         }
     }
+
+    public void Receive(ReloadTransactionRequest message)
+    {
+        if (IsLoadingTranactions)
+        {
+            return;
+        }
+        transactions = LoadTransactions();
+    }
 }
 
 public sealed class WalletViewModelForDesigner : WalletViewModel
@@ -83,7 +94,7 @@ public sealed class WalletViewModelForDesigner : WalletViewModel
         AsyncText = Task.FromResult("Async text for Designer Mode");
         IsLoadingTranactions = true;
     }
-    public override async Task<Transaction[]> LoadTransactions()
+    protected override async Task<Transaction[]> LoadTransactions()
     {
         await Task.Yield();
         return [
