@@ -92,7 +92,7 @@ public sealed class WalletViewModelForDesigner : WalletViewModel
     {
 
         AsyncText = Task.FromResult("Async text for Designer Mode");
-        IsLoadingTranactions = true;
+        IsLoadingTranactions = false;
     }
     protected override async Task<Transaction[]> LoadTransactions()
     {

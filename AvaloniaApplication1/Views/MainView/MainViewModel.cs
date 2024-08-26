@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.ObjectModel;
 
 namespace AvaloniaApplication1.ViewModels;
@@ -47,8 +48,10 @@ public partial class MainViewModel : ObservableRecipient
     }
 }
 
-public class TabItemViewModel
+public class MainViewModelForDesigner : MainViewModel
 {
-    public string Header { get; set; }
-    public ObservableObject Content { get; set; }
+    public MainViewModelForDesigner() : base(new WalletViewModelForDesigner(), new CardViewModelForDesigner(), new MenuViewModelForDesigner(), NullLogger<MainViewModelForDesigner>.Instance)
+    {
+
+    }
 }

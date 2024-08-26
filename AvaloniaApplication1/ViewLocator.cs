@@ -52,7 +52,7 @@ public class ViewLocator : IDataTemplate
     }
 
     /// <summary>
-    /// if viewModelFullTypeName is "ViewModels.WalletViewModel" or "ViewModels.Wallet" then this method will yield 
+    /// if viewModelFullTypeName is "ViewModels.WalletViewModel" or "ViewModels.Wallet" or "ViewModels.WalletViewModelForDesigner" then this method will yield
     /// the possible corresponding Control which are ["Views.WalletView", "Views.WalletControl", "Views.Wallet"]
     /// </summary>
     /// <param name="viewModelFullTypeName"></param>
@@ -60,7 +60,11 @@ public class ViewLocator : IDataTemplate
     public static IEnumerable<string> PossibleControlFullTypeNames(string viewModelFullTypeName)
     {
         var controlName = viewModelFullTypeName;
-        if (viewModelFullTypeName.EndsWith("ViewModel"))
+        if (viewModelFullTypeName.EndsWith("ViewModelForDesigner"))
+        {
+            controlName = viewModelFullTypeName.Substring(0, viewModelFullTypeName.Length - 20);
+        }
+        else if (viewModelFullTypeName.EndsWith("ViewModel"))
         {
             controlName = viewModelFullTypeName.Substring(0, viewModelFullTypeName.Length - 9);
         }

@@ -5,6 +5,8 @@
         d:DesignHeight="450" d:DesignWidth="800"
         x:DataType="vm:MainWindowViewModel" Icon="/Assets/avalonia-logo.ico"
         mc:Ignorable="d">
-    <!--<views:MainView />-->
+    <Design.DataContext>
+        <vm:MainWindowViewModelForDesigner />
+    </Design.DataContext>
     <ContentControl Content="{Binding MainViewModel}" />
 </Window>

@@ -12,3 +12,10 @@ public partial class MainWindowViewModel : ObservableObject
         this.mainViewModel = mainViewModel;
     }
 }
+
+public class MainWindowViewModelForDesigner : MainWindowViewModel
+{
+    public MainWindowViewModelForDesigner() : base(new MainViewModelForDesigner())
+    {
+    }
+}
