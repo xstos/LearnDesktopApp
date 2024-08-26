@@ -9,7 +9,6 @@
     <TabControl Margin="5"
                 SelectedItem="{Binding SelectedTabItem, Mode=TwoWay}"
                 TabStripPlacement="Bottom">
-
         <TabItem Header="Wallet">
             <ContentControl Content="{Binding WalletViewModel}" />
         </TabItem>
@@ -18,6 +17,51 @@
         </TabItem>
         <TabItem Header="Menu">
             <ContentControl Content="{Binding MenuViewModel}" />
+        </TabItem>
+
+
+
+        <TabItem Header="**Draft**">
+            <TabControl Margin="5">
+                <TabControl.Styles>
+                    <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+                        <Setter Property="IsVisible" Value="False" />
+                    </Style>
+                    <Style Selector="TabItem">
+                        <Setter Property="Padding" Value="10,5" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                    </Style>
+
+                    <!--  Selected TabItem Style  -->
+                    <Style Selector="TabItem:selected">
+                        <Setter Property="BorderBrush" Value="Red" />
+                        <!--  Change to your desired color  -->
+                        <Setter Property="BorderThickness" Value="0,0,0,2" />
+                        <!--  Bottom border only  -->
+                    </Style>
+                </TabControl.Styles>
+
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock Text="Icon" />
+                            <TextBlock Text="Wallet" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <TextBlock Margin="5">This is Wallet content</TextBlock>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock Text="Icon" />
+                            <TextBlock Text="Card" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <TextBlock Margin="5">This is Card content</TextBlock>
+                </TabItem>
+            </TabControl>
         </TabItem>
     </TabControl>
 

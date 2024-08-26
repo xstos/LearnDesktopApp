@@ -25,7 +25,7 @@ public class TransactionRepositoryTests
     [Fact()]
     public async Task GetTransactionsTest()
     {
-        TransactionRepository sut = new();
+        TransactionRepository sut = new(_output.ToLogger<ITransactionRepository>());
         var transactions = await sut.GetTransactions();
         _output.WriteLine(string.Join("\n", transactions.Select(x => x.ToString())));
     }
