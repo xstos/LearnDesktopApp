@@ -1,0 +1,46 @@
+<UserControl x:Class="AvaloniaApplication1.Views.DraftView" xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vm="using:AvaloniaApplication1.ViewModels"
+             d:DesignHeight="450" d:DesignWidth="800"
+             mc:Ignorable="d">
+    <TabControl Margin="5">
+        <TabControl.Styles>
+            <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+            <Style Selector="TabItem">
+                <Setter Property="Padding" Value="10,5" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+            </Style>
+
+            <!--  Selected TabItem Style  -->
+            <Style Selector="TabItem:selected">
+                <Setter Property="BorderBrush" Value="Red" />
+                <!--  Change to your desired color  -->
+                <Setter Property="BorderThickness" Value="0,0,0,2" />
+                <!--  Bottom border only  -->
+            </Style>
+        </TabControl.Styles>
+
+        <TabItem>
+            <TabItem.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="Icon" />
+                    <TextBlock Text="Wallet" />
+                </StackPanel>
+            </TabItem.Header>
+            <TextBlock Margin="5">This is Wallet content</TextBlock>
+        </TabItem>
+        <TabItem>
+            <TabItem.Header>
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock Text="Icon" />
+                    <TextBlock Text="Card" />
+                </StackPanel>
+            </TabItem.Header>
+            <TextBlock Margin="5">This is Card content</TextBlock>
+        </TabItem>
+    </TabControl>
+</UserControl>

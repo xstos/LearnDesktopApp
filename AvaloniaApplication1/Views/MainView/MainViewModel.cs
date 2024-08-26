@@ -1,43 +1,54 @@
-﻿using Avalonia.Controls;
-using AvaloniaApplication1.Models;
+﻿using AvaloniaApplication1.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using System.Collections.ObjectModel;
 
 namespace AvaloniaApplication1.ViewModels;
 
 public partial class MainViewModel : ObservableRecipient
 {
-    [ObservableProperty]
-    private WalletViewModel _walletViewModel;
-    [ObservableProperty]
-    private CardViewModel _cardViewModel;
-    [ObservableProperty]
-    private MenuViewModel _menuViewModel;
     private readonly ILogger<MainViewModel> _logger;
 
+    public ObservableCollection<TabItemViewModel> Tabs { get; set; }
+
+    private readonly WalletViewModel _walletViewModel;
+
+
     [ObservableProperty]
-    private TabItem? _selectedTabItem;
+    private TabItemViewModel? _selectedTabValue;
 
     public MainViewModel(WalletViewModel walletViewModel, CardViewModel cardViewModel, MenuViewModel menuViewModel, ILogger<MainViewModel> logger)
     {
-        _walletViewModel = walletViewModel;
-        _cardViewModel = cardViewModel;
-        _menuViewModel = menuViewModel;
         _logger = logger;
+        _walletViewModel = walletViewModel;
+
+        Tabs = new ObservableCollection<TabItemViewModel>
+        {
+            new TabItemViewModel { Header = "Wallet", Content = walletViewModel },
+            new TabItemViewModel { Header = "Card", Content = cardViewModel },
+            new TabItemViewModel { Header = "Menu", Content = menuViewModel }
+        };
+
     }
 
-    partial void OnSelectedTabItemChanged(TabItem? tabItem)
+    partial void OnSelectedTabValueChanged(TabItemViewModel? tabValue)
     {
-        if (tabItem is null)
+        if (tabValue is null)
         {
             return;
         }
-        if ((tabItem.Content as ContentControl)?.Content != WalletViewModel)
+        if (tabValue.Content != _walletViewModel)
         {
             return;
         }
-        _logger.LogInformation("Wallet Tab selected {0}");
+        _logger.LogInformation("Wallet Tab selected.");
         Messenger.Send(new ReloadTransactionRequest());
     }
+}
+
+public class TabItemViewModel
+{
+    public string Header { get; set; }
+    public ObservableObject Content { get; set; }
 }

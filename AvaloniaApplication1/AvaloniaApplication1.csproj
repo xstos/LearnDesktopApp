@@ -29,6 +29,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\Draft\DraftView.axaml.cs">
+	    <DependentUpon>DraftView.axaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Menu\MenuView.axaml.cs">
 	    <DependentUpon>MenuView.axaml</DependentUpon>
 	  </Compile>
