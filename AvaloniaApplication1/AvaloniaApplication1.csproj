@@ -24,19 +24,9 @@
 
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.1.3" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-		<PackageReference Include="Seq.Extensions.Logging" Version="8.0.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Update="Views\Draft\DraftView.axaml.cs">
-	    <DependentUpon>DraftView.axaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\Menu\MenuView.axaml.cs">
-	    <DependentUpon>MenuView.axaml</DependentUpon>
-	  </Compile>
+		<!--<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />-->
+		<!--<PackageReference Include="Seq.Extensions.Logging" Version="8.0.0" />-->
 	</ItemGroup>
 </Project>

@@ -18,8 +18,8 @@ internal static class DependencyInjection
     {
         services.AddLogging(builder
             => builder.AddConsole()
-                .AddDebug()
-                .AddSeq()
+                //.AddDebug()
+                //.AddSeq()
                 .SetMinimumLevel(LogLevel.Debug));
         return services;
     }
