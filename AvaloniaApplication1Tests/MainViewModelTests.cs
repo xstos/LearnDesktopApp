@@ -1,7 +1,8 @@
 ﻿using AvaloniaApplication1;
 using AvaloniaApplication1.Models;
 using AvaloniaApplication1.ViewModels;
-using DryIoc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,28 +12,29 @@ namespace AvaloniaApplication1Tests;
 public class MainViewModelTests
 {
     private readonly ITransactionRepository _transactionRepository = Substitute.For<ITransactionRepository>();
-    private MainViewModel _sut;
+    private readonly MainViewModel _sut;
 
     public MainViewModelTests(ITestOutputHelper output)
     {
+        var serviceCollection = App.BuildDependencyGraph();
+
         //replace the application logger (seq, console..) with the xunit logger
         //so that we could see application's log in the test output
-        App.ServiceProvider.RegisterInstance(output.ToLoggerFactory(), ifAlreadyRegistered: IfAlreadyRegistered.Replace);
-    }
+        serviceCollection.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddXUnit(output);
+        });
 
+        //mock the transaction repository
+        serviceCollection.AddSingleton(_transactionRepository);
+
+        _sut = serviceCollection.BuildServiceProvider().GetRequiredService<MainViewModel>();
+    }
 
     [Fact]
     public void When_WalletTab_IsSelected_Then_TransactionList_ShouldBe_Reloaded()
     {
-        //Arrange
-
-        IContainer? containerForTest = App.ServiceProvider?.Clone();
-
-        //replace external services with mock (otherwise the tests will use real services)
-        containerForTest?.RegisterInstance(_transactionRepository, ifAlreadyRegistered: IfAlreadyRegistered.Replace);
-
-        _sut = containerForTest?.Resolve<MainViewModel>();
-
         //Assert that GetTransactions is called on start up
         _transactionRepository.Received(1).GetTransactions();
         _transactionRepository.ClearReceivedCalls();

@@ -16,7 +16,7 @@ public class DryIocIntegrationTests(ITestOutputHelper _outputHelper)
         //Microsoft-things must to be registered first
         ServiceCollection services = new();
         services.AddLogging(builder
-            => builder.AddConsole()
+            => builder
                 .AddXUnit(_outputHelper)
                 .SetMinimumLevel(LogLevel.Debug));
 
