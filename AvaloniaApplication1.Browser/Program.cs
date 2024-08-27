@@ -16,7 +16,7 @@ internal sealed partial class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            Console.WriteLine(ex.Message);
             throw;
         }
     }
