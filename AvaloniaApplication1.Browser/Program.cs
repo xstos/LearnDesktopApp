@@ -12,6 +12,7 @@ internal sealed partial class Program
         {
             await BuildAvaloniaApp()
                 .WithInterFont()
+                .LogToTrace()
                 .StartBrowserAppAsync("out");
         }
         catch (Exception ex)

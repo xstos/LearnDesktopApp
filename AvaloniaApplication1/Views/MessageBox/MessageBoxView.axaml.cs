@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace AvaloniaApplication1.Views;
 
-public partial class DraftView : UserControl
+public partial class MessageBoxView : UserControl
 {
-    public DraftView()
+    public MessageBoxView()
     {
         InitializeComponent();
     }

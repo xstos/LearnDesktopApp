@@ -19,7 +19,7 @@ public partial class MainViewModel : ObservableRecipient
     [ObservableProperty]
     private TabItemViewModel? _selectedTabValue;
 
-    public MainViewModel(WalletViewModel walletViewModel, CardViewModel cardViewModel, MenuViewModel menuViewModel, ILogger<MainViewModel> logger)
+    public MainViewModel(WalletViewModel walletViewModel, CardViewModel cardViewModel, MenuViewModel menuViewModel, DraftViewModel draftViewModel, ILogger<MainViewModel> logger)
     {
         _logger = logger;
         _walletViewModel = walletViewModel;
@@ -28,7 +28,8 @@ public partial class MainViewModel : ObservableRecipient
         {
             new TabItemViewModel { Header = "Wallet", Content = walletViewModel },
             new TabItemViewModel { Header = "Card", Content = cardViewModel },
-            new TabItemViewModel { Header = "Menu", Content = menuViewModel }
+            new TabItemViewModel { Header = "Menu", Content = menuViewModel },
+            new TabItemViewModel { Header = "**Draft**", Content = draftViewModel }
         };
 
     }
@@ -50,7 +51,10 @@ public partial class MainViewModel : ObservableRecipient
 
 public class MainViewModelForDesigner : MainViewModel
 {
-    public MainViewModelForDesigner() : base(new WalletViewModelForDesigner(), new CardViewModelForDesigner(), new MenuViewModelForDesigner(), NullLogger<MainViewModelForDesigner>.Instance)
+    public MainViewModelForDesigner() : base(new WalletViewModelForDesigner(),
+        new CardViewModelForDesigner(), new MenuViewModelForDesigner(),
+        new DraftViewModel(),
+        NullLogger<MainViewModelForDesigner>.Instance)
     {
 
     }

@@ -40,8 +40,11 @@ internal static class DependencyInjection
         services.AddSingleton<MenuViewModel>();
         services.AddTransient<MenuView>();
 
-        services.AddTransient<WalletViewModel>();
+        services.AddSingleton<WalletViewModel>();
         services.AddTransient<WalletView>();
+
+        services.AddSingleton<DraftViewModel>();
+        services.AddTransient<DraftView>();
 
         services.AddTransient<StatusBar>();
         return services;

@@ -16,7 +16,8 @@ namespace AvaloniaApplication1.Android
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
             return base.CustomizeAppBuilder(builder)
-                .WithInterFont();
+                .WithInterFont()
+                .LogToTrace();
         }
     }
 }
