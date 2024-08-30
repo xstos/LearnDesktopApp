@@ -1,8 +1,6 @@
-﻿using AvaloniaApplication1;
-using AvaloniaApplication1.Models;
+﻿using AvaloniaApplication1.Models;
 using AvaloniaApplication1.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 using Xunit.Abstractions;
@@ -12,19 +10,15 @@ namespace AvaloniaApplication1Tests;
 public class MainViewModelTests
 {
     private readonly ITransactionRepository _transactionRepository = Substitute.For<ITransactionRepository>();
+
+    /// <summary>
+    /// Subject under test
+    /// </summary>
     private readonly MainViewModel _sut;
 
     public MainViewModelTests(ITestOutputHelper output)
     {
-        var serviceCollection = App.BuildDependencyGraph();
-
-        //replace the application logger (seq, console..) with the xunit logger
-        //so that we could see application's log in the test output
-        serviceCollection.AddLogging(builder =>
-        {
-            builder.ClearProviders();
-            builder.AddXUnit(output);
-        });
+        var serviceCollection = Ioc.BuildDependencyGraphForTests(output);
 
         //mock the transaction repository
         serviceCollection.AddSingleton(_transactionRepository);

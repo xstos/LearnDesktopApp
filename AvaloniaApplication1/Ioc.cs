@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaloniaApplication1;
 
-internal static class DependencyInjection
+internal static class Ioc
 {
     /// <summary>
     /// Registration for Microsoft Logging framework
