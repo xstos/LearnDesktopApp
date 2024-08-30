@@ -32,7 +32,7 @@
                     <TextBlock Text="Wallet" />
                 </StackPanel>
             </TabItem.Header>
-            <dialogHost:DialogHost CloseOnClickAway="True"  IsOpen="True">
+            <dialogHost:DialogHost CloseOnClickAway="True" IsOpen="True">
                 <dialogHost:DialogHost.DialogContent>
                     this is dialog content
                 </dialogHost:DialogHost.DialogContent>

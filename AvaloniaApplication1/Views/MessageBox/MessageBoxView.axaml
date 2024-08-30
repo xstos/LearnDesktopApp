@@ -4,49 +4,10 @@
              xmlns:vm="using:AvaloniaApplication1.ViewModels" d:DesignHeight="450"
              d:DesignWidth="800" x:DataType="vm:MessageBoxViewModel"
              mc:Ignorable="d">
-    <TabControl Margin="5">
-        <TabControl.Styles>
-            <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
-                <Setter Property="IsVisible" Value="False" />
-            </Style>
-            <Style Selector="TabItem">
-                <Setter Property="Padding" Value="10,5" />
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="BorderBrush" Value="Transparent" />
-            </Style>
-
-            <!--  Selected TabItem Style  -->
-            <Style Selector="TabItem:selected">
-                <Setter Property="BorderBrush" Value="Red" />
-                <!--  Change to your desired color  -->
-                <Setter Property="BorderThickness" Value="0,0,0,2" />
-                <!--  Bottom border only  -->
-            </Style>
-        </TabControl.Styles>
-
-        <TabItem>
-            <TabItem.Header>
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Icon" />
-                    <TextBlock Text="Wallet" />
-                </StackPanel>
-            </TabItem.Header>
-            <dialogHost:DialogHost CloseOnClickAway="True" IsOpen="True">
-                <dialogHost:DialogHost.DialogContent>
-                    this is dialog content
-                </dialogHost:DialogHost.DialogContent>
-                <TextBlock Margin="5">This is Wallet content</TextBlock>
-            </dialogHost:DialogHost>
-        </TabItem>
-        <TabItem>
-            <TabItem.Header>
-                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                    <TextBlock Text="Icon" />
-                    <TextBlock Text="Card" />
-                </StackPanel>
-            </TabItem.Header>
-            <TextBlock Margin="5">This is Card content</TextBlock>
-        </TabItem>
-    </TabControl>
+    <Design.DataContext>
+        <vm:MessageBoxViewModelFroDesigner />
+    </Design.DataContext>
+    <StackPanel>
+        <TextBox Text="{Binding Message}" />
+    </StackPanel>
 </UserControl>

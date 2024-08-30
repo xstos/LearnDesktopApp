@@ -3,5 +3,5 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vm="using:AvaloniaApplication1.ViewModels"
              d:DesignHeight="450" d:DesignWidth="800"
              x:DataType="vm:CardViewModel" mc:Ignorable="d">
-    <TextBlock Text="Card View" />
+    <Button Command="{Binding AlertCommand}" Content="Display Dialog" />
 </UserControl>

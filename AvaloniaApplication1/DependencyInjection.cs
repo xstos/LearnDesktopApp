@@ -47,6 +47,9 @@ internal static class DependencyInjection
         services.AddTransient<DraftView>();
 
         services.AddTransient<StatusBar>();
+
+        services.AddTransient<MessageBoxViewModel>();
+        services.AddTransient<MessageBoxView>();
         return services;
     }
 }
