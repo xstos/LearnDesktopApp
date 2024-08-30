@@ -15,7 +15,6 @@ public partial class MainViewModel : ObservableRecipient
 
     private readonly WalletViewModel _walletViewModel;
 
-
     [ObservableProperty]
     private TabItemViewModel? _selectedTabValue;
 
@@ -31,7 +30,6 @@ public partial class MainViewModel : ObservableRecipient
             new TabItemViewModel { Header = "Menu", Content = menuViewModel },
             new TabItemViewModel { Header = "**Draft**", Content = draftViewModel }
         };
-
     }
 
     partial void OnSelectedTabValueChanged(TabItemViewModel? tabValue)

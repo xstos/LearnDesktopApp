@@ -7,9 +7,9 @@ namespace AvaloniaApplication1.ViewModels;
 public partial class CardViewModel(IMessageBoxService _messageBoxService) : ObservableObject
 {
     [RelayCommand]
-    public void Alert()
+    public void Alert(string message)
     {
-        _messageBoxService.Show("Hello World!");
+        _messageBoxService.Show(message);
     }
 }
 

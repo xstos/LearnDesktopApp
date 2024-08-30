@@ -33,7 +33,7 @@ public class CardViewModelTests
     [Fact]
     public void WhenClickButton_Then_DisplayMessageBox()
     {
-        _sut.Alert();
+        _sut.Alert("Hello World!");
 
         _messageBoxService.Received(1).Show("Hello World!");
     }
