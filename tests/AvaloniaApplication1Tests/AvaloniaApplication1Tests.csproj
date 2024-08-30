@@ -36,7 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\AvaloniaApplication1\AvaloniaApplication1.csproj" />
+	  <ProjectReference Include="..\..\src\AvaloniaApplication1\AvaloniaApplication1.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
