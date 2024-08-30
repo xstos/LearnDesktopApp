@@ -1,5 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using AvaloniaApplication1.ViewModels;
+using AvaloniaApplication1.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
@@ -10,14 +12,14 @@ public class ViewLocator : IDataTemplate
 {
     private static readonly ImmutableDictionary<Type, Type> ViewModelToControlMap = new Dictionary<Type, Type>()
     {
-        //{ typeof(WalletViewModel), typeof(WalletView) },
-        //{ typeof(MainViewModel), typeof(MainView) },
-        //{ typeof(StatusBarViewModel), typeof(StatusBar) }
+        { typeof(WalletViewModel), typeof(WalletView) },
     }.ToImmutableDictionary();
 
-    public Control Build(object viewModel)
+    public Control Build(object? viewModel)
     {
-        ArgumentNullException.ThrowIfNull(App.ServiceProvider, nameof(App.ServiceProvider));
+        ArgumentNullException.ThrowIfNull(App.ServiceProvider);
+        ArgumentNullException.ThrowIfNull(viewModel);
+
         var viewModelType = viewModel.GetType();
         if (ViewModelToControlMap.TryGetValue(viewModelType, out var controlType) && controlType is not null)
         {
@@ -43,7 +45,7 @@ public class ViewLocator : IDataTemplate
             var control = App.ServiceProvider.GetService(controlType1);
             if (control is Control c)
             {
-                Console.WriteLine($"Found control: {controlFullTypeName}");
+                //Console.WriteLine($"Found control: {controlFullTypeName}");
                 return c;
             }
         }
@@ -52,11 +54,13 @@ public class ViewLocator : IDataTemplate
     }
 
     /// <summary>
-    /// if viewModelFullTypeName is "ViewModels.WalletViewModel" or "ViewModels.Wallet" or "ViewModels.WalletViewModelForDesigner" then this method will yield
-    /// the possible corresponding Control which are ["Views.WalletView", "Views.WalletControl", "Views.Wallet"]
+    /// Return the possible Full type name of the View controls corresponding to the given View Model.
+    /// For eg: the input viewModelFullTypeName is "ViewModels.WalletViewModel" or "ViewModels.Wallet" or "ViewModels.WalletViewModelForDesigner" 
+    /// then this method will yield ["Views.WalletView", "Views.WalletControl", "Views.Wallet"].
+    /// Checkout the Unit test for more examples.
     /// </summary>
-    /// <param name="viewModelFullTypeName"></param>
-    /// <returns>possibles controlFullTypeName</returns>
+    /// <param name="viewModelFullTypeName">The full type name of the ViewModel</param>
+    /// <returns>Full type name of the corresponding View</returns>
     public static IEnumerable<string> PossibleControlFullTypeNames(string viewModelFullTypeName)
     {
         var controlName = viewModelFullTypeName;
@@ -78,5 +82,5 @@ public class ViewLocator : IDataTemplate
     }
     private Control NotFound(string message) => new TextBlock { Text = "Control not found. " + message };
 
-    public bool Match(object data) => data is ObservableObject;
+    public bool Match(object? data) => data is ObservableObject;
 }
