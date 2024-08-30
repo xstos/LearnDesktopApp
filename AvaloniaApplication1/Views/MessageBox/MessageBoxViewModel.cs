@@ -7,9 +7,9 @@ public partial class MessageBoxViewModel : ObservableObject
     [ObservableProperty]
     private string _message;
 }
-public class MessageBoxViewModelFroDesigner : MessageBoxViewModel
+public class MessageBoxViewModelForDesigner : MessageBoxViewModel
 {
-    public MessageBoxViewModelFroDesigner()
+    public MessageBoxViewModelForDesigner()
     {
         Message = "Dialog message";
     }

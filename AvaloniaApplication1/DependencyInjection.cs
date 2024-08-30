@@ -36,7 +36,6 @@ internal static class DependencyInjection
         services.AddSingleton<CardViewModel>();
         services.AddTransient<CardView>();
 
-
         services.AddSingleton<MenuViewModel>();
         services.AddTransient<MenuView>();
 
@@ -50,6 +49,8 @@ internal static class DependencyInjection
 
         services.AddTransient<MessageBoxViewModel>();
         services.AddTransient<MessageBoxView>();
+
+        services.AddTransient<IMessageBoxService, MessageBoxService>();
         return services;
     }
 }

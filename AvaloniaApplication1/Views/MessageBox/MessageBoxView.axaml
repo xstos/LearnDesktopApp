@@ -5,9 +5,9 @@
              d:DesignWidth="800" x:DataType="vm:MessageBoxViewModel"
              mc:Ignorable="d">
     <Design.DataContext>
-        <vm:MessageBoxViewModelFroDesigner />
+        <vm:MessageBoxViewModelForDesigner />
     </Design.DataContext>
     <StackPanel>
-        <TextBox Text="{Binding Message}" />
+        <TextBlock Text="{Binding Message}" />
     </StackPanel>
 </UserControl>

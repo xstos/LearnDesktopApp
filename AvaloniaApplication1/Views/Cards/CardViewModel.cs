@@ -1,18 +1,21 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using AvaloniaApplication1.Models;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaloniaApplication1.ViewModels;
 
-public partial class CardViewModel : ObservableObject
+public partial class CardViewModel(IMessageBoxService _messageBoxService) : ObservableObject
 {
     [RelayCommand]
     public void Alert()
     {
-        MessageBoxViewModel messageBoxViewModel = App.ServiceProvider!.GetRequiredService<MessageBoxViewModel>();
-        messageBoxViewModel.Message = "Hello World!";
-        DialogHostAvalonia.DialogHost.Show(messageBoxViewModel);
+        _messageBoxService.Show("Hello World!");
     }
 }
 
-public class CardViewModelForDesigner : CardViewModel;
+public class CardViewModelForDesigner : CardViewModel
+{
+    public CardViewModelForDesigner() : base(new MessageBoxService(new MessageBoxViewModel()))
+    {
+    }
+}
