@@ -16,8 +16,7 @@ public partial class App : Application
     public static ServiceCollection BuildDependencyGraph()
     {
         ServiceCollection services = new();
-        services.AddLoggingService();
-        services.RegisterApplicationServices();
+        services.AddLogging();
         return services;
     }
 
