@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
@@ -30,19 +31,23 @@ public partial class App : Application
     {
         DisableAvaloniaDataAnnotationValidation();
 
+        object GetContent()
+        {
+            new StackPanel().Var(out var sp);
+            sp.Children.Add(new TextBox() {Text = "hello world"});
+            return sp;
+        }
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = ServiceProvider.GetRequiredService<MainWindowViewModel>()
-            };
+            new MainWindow().Var(out var win);
+            win.Content = GetContent();
+            desktop.MainWindow = win;
+
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
-            singleViewPlatform.MainView = new MainView
-            {
-                DataContext = ServiceProvider.GetRequiredService<MainViewModel>()
-            };
+            singleViewPlatform.MainView = new MainView().Var(out var mv);
+            mv.Content = GetContent();
         }
 
         base.OnFrameworkInitializationCompleted();
