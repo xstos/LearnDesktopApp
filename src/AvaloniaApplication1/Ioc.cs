@@ -1,7 +1,4 @@
-﻿using AvaloniaApplication1.Models;
-using AvaloniaApplication1.ViewModels;
-using AvaloniaApplication1.Views;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaloniaApplication1;
 
@@ -25,32 +22,6 @@ internal static class Ioc
     /// <returns></returns>
     public static ServiceCollection RegisterApplicationServices(this ServiceCollection services)
     {
-        services.AddSingleton<ITransactionRepository, TransactionRepository>();
-
-        services.AddSingleton<MainWindowViewModel>();
-        services.AddTransient<MainWindow>();
-
-        services.AddSingleton<MainViewModel>();
-        services.AddTransient<MainView>();
-
-        services.AddSingleton<CardViewModel>();
-        services.AddTransient<CardView>();
-
-        services.AddSingleton<MenuViewModel>();
-        services.AddTransient<MenuView>();
-
-        services.AddSingleton<WalletViewModel>();
-        services.AddTransient<WalletView>();
-
-        services.AddSingleton<DraftViewModel>();
-        services.AddTransient<DraftView>();
-
-        services.AddTransient<StatusBar>();
-
-        services.AddTransient<MessageBoxViewModel>();
-        services.AddTransient<MessageBoxView>();
-
-        services.AddTransient<IMessageBoxService, MessageBoxService>();
         return services;
     }
 }

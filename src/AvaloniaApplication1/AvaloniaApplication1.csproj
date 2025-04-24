@@ -28,4 +28,14 @@
 		<!--<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />-->
 		<!--<PackageReference Include="Seq.Extensions.Logging" Version="8.0.0" />-->
 	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Views\Menu\MenuView.axaml" />
+	  <UpToDateCheckInput Remove="Views\StatusBar\StatusBar.axaml" />
+	  <UpToDateCheckInput Remove="Views\Cards\CardView.axaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Assets\" />
+	</ItemGroup>
 </Project>
