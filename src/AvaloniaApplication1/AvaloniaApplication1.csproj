@@ -19,6 +19,7 @@
 		<PackageReference Include="Bogus" Version="35.6.0" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.0" />
 		<PackageReference Include="DialogHost.Avalonia" Version="0.8.1" />
+		<PackageReference Include="Jint" Version="4.2.2" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
