@@ -10,7 +10,8 @@ using Jint.Native;
 using Jint.Native.Json;
 using Jint.Runtime;
 using Microsoft.Extensions.DependencyInjection;
-
+using static Ext;
+using static UI;
 namespace AvaloniaApplication1;
 
 public partial class App : Application
@@ -32,30 +33,64 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        DisableAvaloniaDataAnnotationValidation();
-
+        var parsingOptions = new ScriptParsingOptions
+        {
+            Tolerant = true,
+        };
+        var engine = new Engine(cfg => cfg
+            .AllowClr()
+        );
+        var serializer = new JsonSerializer(engine);
+        
+        Render(() =>
+        {
+            textBox(_);
+            textBox(_);
+            dockPanel(() =>
+            {
+                textBox(_);
+                textBox(_);
+            });
+            stackPanel(() =>
+            {
+                button(() =>
+                {
+                  
+                });
+                textBox(_);
+            });
+        });
+        
         object GetContent()
         {
-            var engine = new Engine(cfg => cfg
-                .AllowClr()
-            );
-            var parsingOptions = new ScriptParsingOptions
-            {
-                Tolerant = true,
-            };
+            
+            new DockPanel().Var(out var pnl);
+            
+            new ListBox().Var(out var lb);
+            lb.Items.Add(new ListBoxItem().Var(out var li));
+            li.Content = "hi";
+            lb._Dock(Dock.Left);
+            new TextBox().Var(out var tb2);
+            tb2._Dock(Dock.Top);
+            new TextBox() { Text = "hello world" }.Var(out var tb);
+            tb._Dock(Dock.Top);
+            pnl.Children.Add(lb);
 
-            var serializer = new JsonSerializer(engine);
-            new DockPanel().Var(out var sp);
-            sp.Children.Add(new TextBox() { Text = "hello world" }.Var(out var tb));
-            sp.Children.Add(new TextBox().Var(out var tb2));
+            pnl.Children.Add(tb);
+            pnl.Children.Add(tb2);
             tb2.TextWrapping = TextWrapping.Wrap;
             tb.TextWrapping = TextWrapping.Wrap;
             tb.AcceptsReturn = true;
             tb.TextChanged += (sender, args) =>
             {
+                tb2.Text = Eval(tb.Text);
+            };
+            string Eval(string? txt)
+            {
                 try
                 {
-                    var result = engine.Evaluate(tb.Text, parsingOptions);
+                    
+                    var result = engine.Evaluate(txt, parsingOptions);
                     JsValue str = result;
                     if (!result.IsPrimitive() && result is not IJsPrimitive)
                     {
@@ -70,18 +105,18 @@ public partial class App : Application
                         str = serializer.Serialize(result, JsValue.Undefined, JsValue.Undefined);
                     }
 
-                    tb2.Text = str + "";
+                    return str + "";
                 }
                 catch (JavaScriptException je)
                 {
-                    tb2.Text = je.Message;
+                    return je.Message;
                 }
                 catch (Exception e)
                 {
-                    tb2.Text = e.ToString();
+                    return e.ToString();
                 }
-            };
-            return sp;
+            }
+            return pnl;
         }
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
