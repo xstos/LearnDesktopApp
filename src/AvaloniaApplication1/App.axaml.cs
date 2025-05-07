@@ -5,17 +5,23 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaApplication1.Views;
+using CSScriptLib;
 using Jint;
 using Jint.Native;
 using Jint.Native.Json;
 using Jint.Runtime;
 using Microsoft.Extensions.DependencyInjection;
-using static Ext;
 using static UI;
+
 namespace AvaloniaApplication1;
 
+public interface ICalc
+{
+    Action<Panel> Sum();
+}
 public partial class App : Application
 {
+    public static MainWindow Win { get; set; }
     public static readonly IServiceProvider? ServiceProvider = BuildDependencyGraph()
         .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -41,31 +47,29 @@ public partial class App : Application
             .AllowClr()
         );
         var serializer = new JsonSerializer(engine);
+        //todo: tiny todo app
+        
         
         Render(() =>
         {
-            textBox(_);
-            textBox(_);
-            dockPanel(() =>
+            textBox(() =>
             {
-                textBox(_);
-                textBox(_);
+                
             });
-            stackPanel(() =>
+            textBox(() =>
             {
-                button(() =>
-                {
-                  
-                });
-                textBox(_);
             });
-        });
+            textBox(() =>
+            {
+
+            });
+        }).Var(out var foo);
         
         object GetContent()
         {
             
-            new DockPanel().Var(out var pnl);
-            
+            new WrapPanel().Var(out var pnl);
+            return pnl;
             new ListBox().Var(out var lb);
             lb.Items.Add(new ListBoxItem().Var(out var li));
             li.Content = "hi";
@@ -119,19 +123,56 @@ public partial class App : Application
             return pnl;
         }
 
+        var pnl = GetContent();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            new MainWindow().Var(out var win);
-            win.Content = GetContent();
+            new MainWindow().Var(out MainWindow win);
+            win.Content = pnl;
+            Win = win;
+            //ScriptExample(win);
             desktop.MainWindow = win;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView().Var(out var mv);
-            mv.Content = GetContent();
+            mv.Content = pnl;
         }
-
+        
         base.OnFrameworkInitializationCompleted();
+    }
+
+    static void Tree()
+    {
+        
+    }
+    static void ScriptExample(MainWindow win)
+    {
+            
+        dynamic calc = CSScript.Evaluator.ReferenceDomainAssemblies()
+            .LoadCode(
+                @"
+using Avalonia;
+using System;
+using Avalonia.Controls;
+using AvaloniaApplication1;
+public class Script : ICalc
+{
+    public Action<Panel> Sum()
+    {
+        void Foo(Panel p) {
+            var lb = new ListBox();
+            var lbi = new ListBoxItem();
+            lb.Items.Add(lbi);
+            lbi.Content = ""hi"";
+            p.Children.Add(new ListBox());
+            p.Children[0]=lb;
+        }
+        return Foo;                  
+    }
+}
+");
+        Action<Panel> result = calc.Sum();
+        result(win.Content as Panel);
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
@@ -146,4 +187,5 @@ public partial class App : Application
             BindingPlugins.DataValidators.Remove(plugin);
         }
     }
+    
 }
