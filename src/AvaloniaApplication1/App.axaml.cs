@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaApplication1.Views;
@@ -48,22 +49,8 @@ public partial class App : Application
         );
         var serializer = new JsonSerializer(engine);
         //todo: tiny todo app
+        //how to type text in wpf?
         
-        
-        Render(() =>
-        {
-            textBox(() =>
-            {
-                
-            });
-            textBox(() =>
-            {
-            });
-            textBox(() =>
-            {
-
-            });
-        }).Var(out var foo);
         
         object GetContent()
         {
@@ -123,7 +110,53 @@ public partial class App : Application
             return pnl;
         }
 
-        var pnl = GetContent();
+        var pnl = GetContent() as WrapPanel;
+        var cur = new TextBlock() { Tag = "cursor", Text = "█" };
+        pnl.Children.Add(cur);
+
+        void OnTextInput(object? sender, TextInputEventArgs args)
+        {
+            
+            var ix =pnl.Children.IndexOf(cur);
+            var tb = new TextBlock() { Text = args.Text, Margin = new Thickness(0), Padding = new Thickness(0)};
+            pnl.Children.Insert(ix,tb);
+            //
+        }
+        void OnWinOnKeyDown(object? sender, KeyEventArgs args)
+        {
+            if (args.Key == Key.Enter)
+            {
+                var ix =pnl.Children.IndexOf(cur);
+                var ctrl = new TextBlock()
+                {
+                    Text = new string(' ',10000),
+                    Margin = new Thickness(0), Padding = new Thickness(0),
+                    Background = new SolidColorBrush(Colors.Red),
+                    //HorizontalAlignment = HorizontalAlignment.Stretch
+                };
+                pnl.Children.Insert(ix,ctrl);
+                return;
+            }
+
+            if (args.Key == Key.Left)
+            {
+                var ix =pnl.Children.IndexOf(cur);
+                if (ix > 0)
+                {
+                    Swap(pnl,ix);
+                }
+            }
+
+            if (args.Key == Key.Right)
+            {
+                var ix =pnl.Children.IndexOf(cur);
+                if (ix < pnl.Children.Count - 1)
+                {
+                    ix += 1;
+                    Swap(pnl, ix);
+                }
+            }
+        }
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             new MainWindow().Var(out MainWindow win);
@@ -131,14 +164,30 @@ public partial class App : Application
             Win = win;
             //ScriptExample(win);
             desktop.MainWindow = win;
+            win.TextInput += OnTextInput;
+            win.KeyDown += OnWinOnKeyDown;
+            win.FontFamily = new FontFamily("Courier New");
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView().Var(out var mv);
             mv.Content = pnl;
+            mv.TextInput += OnTextInput;
+            mv.KeyDown += OnWinOnKeyDown;
+            mv.FontFamily = new FontFamily("Courier New");
+
         }
         
         base.OnFrameworkInitializationCompleted();
+    }
+
+    static void Swap(WrapPanel pnl, int ix)
+    {
+        var a = pnl.Children[ix - 1];
+        var b = pnl.Children[ix];
+        pnl.Children[ix] = new TextBlock();
+        pnl.Children[ix - 1] = b;
+        pnl.Children[ix] = a;
     }
 
     static void Tree()
