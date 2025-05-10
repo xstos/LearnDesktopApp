@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaApplication1.Views;
@@ -116,45 +117,51 @@ public partial class App : Application
 
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
-            
+            var parent = cur.GetLogicalParent() as Panel;
             var ix =pnl.Children.IndexOf(cur);
-            var tb = new TextBlock() { Text = args.Text, Margin = new Thickness(0), Padding = new Thickness(0)};
-            pnl.Children.Insert(ix,tb);
-            //
+            var key = args.Text;
+            switch (key)
+            {
+                case "enter": 
+                    var ctrl = new TextBlock()
+                    {
+                        Text = new string(' ',10000),
+                        Margin = new Thickness(0), Padding = new Thickness(0),
+                        Background = new SolidColorBrush(Colors.Red),
+                        //HorizontalAlignment = HorizontalAlignment.Stretch
+                    };
+                    parent.Children.Insert(ix,ctrl);
+                    break;
+                case "back":
+                    if (ix > 0) parent.Children.RemoveAt(ix-1);
+                    break;
+                case "left":
+                    if (ix > 0)
+                    {
+                        Swap(pnl,ix);
+                    }
+                    break;
+                case "right":
+                    if (ix < parent.Children.Count - 1)
+                    {
+                        Swap(pnl, ix+1);
+                    }
+                    break;
+                default:
+                    var tb = new TextBlock() { Text = args.Text, Margin = new Thickness(0), Padding = new Thickness(0)};
+                    parent.Children.Insert(ix,tb);
+                    break;
+            }
         }
+        
         void OnWinOnKeyDown(object? sender, KeyEventArgs args)
         {
-            if (args.Key == Key.Enter)
+            switch (args.Key)
             {
-                var ix =pnl.Children.IndexOf(cur);
-                var ctrl = new TextBlock()
-                {
-                    Text = new string(' ',10000),
-                    Margin = new Thickness(0), Padding = new Thickness(0),
-                    Background = new SolidColorBrush(Colors.Red),
-                    //HorizontalAlignment = HorizontalAlignment.Stretch
-                };
-                pnl.Children.Insert(ix,ctrl);
-                return;
-            }
-
-            if (args.Key == Key.Left)
-            {
-                var ix =pnl.Children.IndexOf(cur);
-                if (ix > 0)
-                {
-                    Swap(pnl,ix);
-                }
-            }
-
-            if (args.Key == Key.Right)
-            {
-                var ix =pnl.Children.IndexOf(cur);
-                if (ix < pnl.Children.Count - 1)
-                {
-                    ix += 1;
-                    Swap(pnl, ix);
-                }
+                case Key.Enter: send(sender, "enter"); break;
+                case Key.Back: send(sender, "back"); break;
+                case Key.Left: send(sender, "left"); break;
+                case Key.Right: send(sender, "right"); break;
             }
         }
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -179,9 +186,14 @@ public partial class App : Application
         }
         
         base.OnFrameworkInitializationCompleted();
+
+        void send(object? sender, string? text)
+        {
+            OnTextInput(sender,new TextInputEventArgs() {Text = text});
+        }
     }
 
-    static void Swap(WrapPanel pnl, int ix)
+    static void Swap(Panel pnl, int ix)
     {
         var a = pnl.Children[ix - 1];
         var b = pnl.Children[ix];
@@ -190,10 +202,6 @@ public partial class App : Application
         pnl.Children[ix] = a;
     }
 
-    static void Tree()
-    {
-        
-    }
     static void ScriptExample(MainWindow win)
     {
             
