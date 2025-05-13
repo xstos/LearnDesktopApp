@@ -42,14 +42,48 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var parsingOptions = new ScriptParsingOptions
+        void jsInit()
         {
-            Tolerant = true,
-        };
-        var engine = new Engine(cfg => cfg
-            .AllowClr()
-        );
-        var serializer = new JsonSerializer(engine);
+            var parsingOptions = new ScriptParsingOptions
+            {
+                Tolerant = true,
+            };
+            var engine = new Engine(cfg => cfg
+                .AllowClr()
+            );
+            var serializer = new JsonSerializer(engine);
+            string Eval(string? txt)
+            {
+                try
+                {
+                    var result = engine.Evaluate(txt, parsingOptions);
+                    JsValue str = result;
+                    if (!result.IsPrimitive() && result is not IJsPrimitive)
+                    {
+                        str = serializer.Serialize(result, JsValue.Undefined, "  ");
+                        if (str == JsValue.Undefined)
+                        {
+                            str = result;
+                        }
+                    }
+                    else if (result.IsString())
+                    {
+                        str = serializer.Serialize(result, JsValue.Undefined, JsValue.Undefined);
+                    }
+
+                    return str + "";
+                }
+                catch (JavaScriptException je)
+                {
+                    return je.Message;
+                }
+                catch (Exception e)
+                {
+                    return e.ToString();
+                }
+            }
+        }
+        
         //todo: tiny todo app
         
         new WrapPanel().Var(out var pnl);
@@ -62,118 +96,118 @@ public partial class App : Application
         var root = sv;
         var cur = new TextBlock() { Tag = "cursor", Text = "█" };
         pnl.Children.Add(cur);
+        
+        
 
-        void OnTextInput(object? sender, TextInputEventArgs args)
+        void onCommand(string cmd)
         {
+            Console.WriteLine(cmd);
             var parent = cur.GetLogicalParent() as Panel;
             var ix =pnl.Children.IndexOf(cur);
-            var key = args.Text;
-            switch (key)
+
+            void newLine()
+            {
+                var ctrl = new TextBlock()
+                {
+                    Text = new string(' ',10000),
+                    Margin = new Thickness(0), Padding = new Thickness(0),
+                    Background = new SolidColorBrush(Colors.Red),
+                };
+                parent.Children.Insert(ix,ctrl);
+            }
+
+            void backSpace()
+            {
+                if (ix > 0) parent.Children.RemoveAt(ix-1);
+            }
+
+            void delete()
+            {
+                if (ix<parent.Children.Count-1) parent.Children.RemoveAt(ix+1);
+            }
+
+            void cursorLeft()
+            {
+                if (ix > 0) Swap(pnl,ix);
+            }
+
+            void cursorRight()
+            {
+                if (ix < parent.Children.Count - 1) Swap(pnl, ix+1);
+            }
+
+            void writeChar()
+            {
+                var tb = new TextBlock() { Text = cmd, Margin = new Thickness(0), Padding = new Thickness(0)};
+                parent.Children.Insert(ix,tb);
+            }
+            switch (cmd)
             {
                 case "enter": 
-                    var ctrl = new TextBlock()
-                    {
-                        Text = new string(' ',10000),
-                        Margin = new Thickness(0), Padding = new Thickness(0),
-                        Background = new SolidColorBrush(Colors.Red),
-                        //HorizontalAlignment = HorizontalAlignment.Stretch
-                    };
-                    parent.Children.Insert(ix,ctrl);
+                    newLine();
                     break;
                 case "back":
-                    if (ix > 0) parent.Children.RemoveAt(ix-1);
+                    backSpace();
                     break;
                 case "delete":
-                    if (ix<parent.Children.Count-1) parent.Children.RemoveAt(ix+1);
+                    delete();
                     break;
                 case "left":
-                    if (ix > 0)
-                    {
-                        Swap(pnl,ix);
-                    }
+                    cursorLeft();
                     break;
                 case "right":
-                    if (ix < parent.Children.Count - 1)
-                    {
-                        Swap(pnl, ix+1);
-                    }
+                    cursorRight();
                     break;
                 default:
-                    var tb = new TextBlock() { Text = args.Text, Margin = new Thickness(0), Padding = new Thickness(0)};
-                    parent.Children.Insert(ix,tb);
+                    writeChar();
                     break;
+            }
+        }
+        void OnTextInput(object? sender, TextInputEventArgs args)
+        {
+            var key = args.Text;
+            onCommand(key);
+        }
+        void OnWinOnKeyDown(object? sender, KeyEventArgs args)
+        {
+            var txt = "";
+            if (args.KeyModifiers.HasFlag(KeyModifiers.Control)) txt += "control+";
+            if (args.KeyModifiers.HasFlag(KeyModifiers.Shift)) txt += "shift+";
+            switch (args.Key)
+            {
+                case Key.Enter: onCommand(txt+"enter"); break;
+                case Key.Back: onCommand(txt+"back"); break;
+                case Key.Left: onCommand(txt+"left"); break;
+                case Key.Right: onCommand(txt+"right"); break;
+                case Key.Delete: onCommand(txt+"delete"); break;
             }
         }
         
-        void OnWinOnKeyDown(object? sender, KeyEventArgs args)
-        {
-            switch (args.Key)
-            {
-                case Key.Enter: send(sender, "enter"); break;
-                case Key.Back: send(sender, "back"); break;
-                case Key.Left: send(sender, "left"); break;
-                case Key.Right: send(sender, "right"); break;
-                case Key.Delete: send(sender, "delete"); break;
-            }
-        }
-        string Eval(string? txt)
-        {
-            try
-            {
-                    
-                var result = engine.Evaluate(txt, parsingOptions);
-                JsValue str = result;
-                if (!result.IsPrimitive() && result is not IJsPrimitive)
-                {
-                    str = serializer.Serialize(result, JsValue.Undefined, "  ");
-                    if (str == JsValue.Undefined)
-                    {
-                        str = result;
-                    }
-                }
-                else if (result.IsString())
-                {
-                    str = serializer.Serialize(result, JsValue.Undefined, JsValue.Undefined);
-                }
-
-                return str + "";
-            }
-            catch (JavaScriptException je)
-            {
-                return je.Message;
-            }
-            catch (Exception e)
-            {
-                return e.ToString();
-            }
-        }
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             new MainWindow().Var(out MainWindow win);
+            win.FontFamily = new FontFamily("Courier New");
+
             win.Content = root;
             Win = win;
-            //ScriptExample(win);
             desktop.MainWindow = win;
             win.TextInput += OnTextInput;
             win.KeyDown += OnWinOnKeyDown;
-            win.FontFamily = new FontFamily("Courier New");
+            
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView().Var(out var mv);
+            mv.FontFamily = new FontFamily("Courier New");
+
             mv.Content = root;
             mv.TextInput += OnTextInput;
             mv.KeyDown += OnWinOnKeyDown;
-            mv.FontFamily = new FontFamily("Courier New");
 
         }
         
         base.OnFrameworkInitializationCompleted();
-
-        void send(object? sender, string? text)
-        {
-            OnTextInput(sender,new TextInputEventArgs() {Text = text});
-        }
+        
     }
 
     static void Swap(Panel pnl, int ix)
