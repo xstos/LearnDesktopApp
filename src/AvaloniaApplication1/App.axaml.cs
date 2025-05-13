@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
@@ -50,68 +51,15 @@ public partial class App : Application
         );
         var serializer = new JsonSerializer(engine);
         //todo: tiny todo app
-        //how to type text in wpf?
         
+        new WrapPanel().Var(out var pnl);
+        pnl.Height=Double.NaN;
+        pnl.Width=Double.NaN;
+        new ScrollViewer().Var(out var sv);
         
-        object GetContent()
-        {
-            
-            new WrapPanel().Var(out var pnl);
-            return pnl;
-            new ListBox().Var(out var lb);
-            lb.Items.Add(new ListBoxItem().Var(out var li));
-            li.Content = "hi";
-            lb._Dock(Dock.Left);
-            new TextBox().Var(out var tb2);
-            tb2._Dock(Dock.Top);
-            new TextBox() { Text = "hello world" }.Var(out var tb);
-            tb._Dock(Dock.Top);
-            pnl.Children.Add(lb);
-
-            pnl.Children.Add(tb);
-            pnl.Children.Add(tb2);
-            tb2.TextWrapping = TextWrapping.Wrap;
-            tb.TextWrapping = TextWrapping.Wrap;
-            tb.AcceptsReturn = true;
-            tb.TextChanged += (sender, args) =>
-            {
-                tb2.Text = Eval(tb.Text);
-            };
-            string Eval(string? txt)
-            {
-                try
-                {
-                    
-                    var result = engine.Evaluate(txt, parsingOptions);
-                    JsValue str = result;
-                    if (!result.IsPrimitive() && result is not IJsPrimitive)
-                    {
-                        str = serializer.Serialize(result, JsValue.Undefined, "  ");
-                        if (str == JsValue.Undefined)
-                        {
-                            str = result;
-                        }
-                    }
-                    else if (result.IsString())
-                    {
-                        str = serializer.Serialize(result, JsValue.Undefined, JsValue.Undefined);
-                    }
-
-                    return str + "";
-                }
-                catch (JavaScriptException je)
-                {
-                    return je.Message;
-                }
-                catch (Exception e)
-                {
-                    return e.ToString();
-                }
-            }
-            return pnl;
-        }
-
-        var pnl = GetContent() as WrapPanel;
+        sv.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+        sv.Content = pnl;
+        var root = sv;
         var cur = new TextBlock() { Tag = "cursor", Text = "█" };
         pnl.Children.Add(cur);
 
@@ -134,6 +82,9 @@ public partial class App : Application
                     break;
                 case "back":
                     if (ix > 0) parent.Children.RemoveAt(ix-1);
+                    break;
+                case "delete":
+                    if (ix<parent.Children.Count-1) parent.Children.RemoveAt(ix+1);
                     break;
                 case "left":
                     if (ix > 0)
@@ -162,12 +113,44 @@ public partial class App : Application
                 case Key.Back: send(sender, "back"); break;
                 case Key.Left: send(sender, "left"); break;
                 case Key.Right: send(sender, "right"); break;
+                case Key.Delete: send(sender, "delete"); break;
+            }
+        }
+        string Eval(string? txt)
+        {
+            try
+            {
+                    
+                var result = engine.Evaluate(txt, parsingOptions);
+                JsValue str = result;
+                if (!result.IsPrimitive() && result is not IJsPrimitive)
+                {
+                    str = serializer.Serialize(result, JsValue.Undefined, "  ");
+                    if (str == JsValue.Undefined)
+                    {
+                        str = result;
+                    }
+                }
+                else if (result.IsString())
+                {
+                    str = serializer.Serialize(result, JsValue.Undefined, JsValue.Undefined);
+                }
+
+                return str + "";
+            }
+            catch (JavaScriptException je)
+            {
+                return je.Message;
+            }
+            catch (Exception e)
+            {
+                return e.ToString();
             }
         }
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             new MainWindow().Var(out MainWindow win);
-            win.Content = pnl;
+            win.Content = root;
             Win = win;
             //ScriptExample(win);
             desktop.MainWindow = win;
@@ -178,7 +161,7 @@ public partial class App : Application
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView().Var(out var mv);
-            mv.Content = pnl;
+            mv.Content = root;
             mv.TextInput += OnTextInput;
             mv.KeyDown += OnWinOnKeyDown;
             mv.FontFamily = new FontFamily("Courier New");
@@ -246,3 +229,4 @@ public class Script : ICalc
     }
     
 }
+
