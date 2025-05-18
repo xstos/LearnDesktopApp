@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using ImpromptuInterface;
 
 
-public static class Ext
+public static partial class Ext
 {
     public static T Var<T>(this T v, out T v2)
     {
@@ -18,6 +18,16 @@ public static class Ext
     public static string _Join(this IEnumerable<string> strings, string separator)
     {
         return String.Join(separator, strings.ToArray());
+    }
+    public static T[] enu<T>(params T[] items)
+    {
+        return items;
+    }
+    public static LinkedListNode<T> SwapWith<T>(this LinkedListNode<T> node2, LinkedListNode<T> node1)
+    {
+        node1.List.Remove(node1);
+        node2.List.AddAfter(node2, node1);
+        return node2;
     }
 }
 

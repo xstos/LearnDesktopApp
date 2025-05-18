@@ -15,8 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{753CCF71
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaApplication1Tests", "tests\AvaloniaApplication1Tests\AvaloniaApplication1Tests.csproj", "{C25E96C8-DA6C-4A22-91EA-171554151F60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryTests", "tests\LibraryTests\LibraryTests.csproj", "{AE1AAE1D-0FF3-4F13-BCB2-B2B0E366AF69}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,10 +37,6 @@ Global
 		{C25E96C8-DA6C-4A22-91EA-171554151F60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C25E96C8-DA6C-4A22-91EA-171554151F60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C25E96C8-DA6C-4A22-91EA-171554151F60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE1AAE1D-0FF3-4F13-BCB2-B2B0E366AF69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE1AAE1D-0FF3-4F13-BCB2-B2B0E366AF69}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE1AAE1D-0FF3-4F13-BCB2-B2B0E366AF69}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE1AAE1D-0FF3-4F13-BCB2-B2B0E366AF69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +46,5 @@ Global
 		{0AC9AD5B-B03C-486F-BFDC-9EFC55BD7C05} = {7743EF79-2B4B-4413-BE2C-FF0097F65DE3}
 		{856D6D7F-F9B6-4B17-B1EA-0918F9034F86} = {7743EF79-2B4B-4413-BE2C-FF0097F65DE3}
 		{C25E96C8-DA6C-4A22-91EA-171554151F60} = {753CCF71-C439-4047-93B3-C7992FE027D1}
-		{AE1AAE1D-0FF3-4F13-BCB2-B2B0E366AF69} = {753CCF71-C439-4047-93B3-C7992FE027D1}
 	EndGlobalSection
 EndGlobal

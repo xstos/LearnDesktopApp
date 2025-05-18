@@ -8,6 +8,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using AvaloniaApplication1.Views;
+using CSScripting;
 using CSScriptLib;
 using Jint;
 using Jint.Native;
@@ -15,13 +16,151 @@ using Jint.Native.Json;
 using Jint.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using static UI;
+using static Ext;
+using ValueOf;
+using OneOf;
+//namespace AvaloniaApplication1;
 
-namespace AvaloniaApplication1;
-
-public interface ICalc
+public class Node1 : ValueOf<string, Node1>
 {
-    Action<Panel> Sum();
+    
+    public static implicit operator Node1(string c)
+    {
+        return From(c);
+    }
 }
+
+public record Node
+{
+    public OneOf<char, string> Data;
+
+    public static implicit operator Node(char c)
+    {
+        return new Node() { Data = c };
+    }
+    public static implicit operator Node(string c)
+    {
+        return new Node() { Data = c };
+    }
+    
+}
+public class Derp<T>
+{
+    public Action<T> Value;
+    public static implicit operator Derp<T>(Action<T> func)
+    {
+        return new Derp<T>() { Value = func };
+    }
+    public static Derp<T> operator +(Derp<T> a, T arg)
+    {
+        a.Value(arg);
+        return a;
+    }
+}
+public static partial class Ext
+{
+    
+}
+
+public enum Direction
+{
+    Left,
+    Right,
+    Up,
+    Down,
+}
+public class Doc
+{
+    public Doc()
+    {
+        var root = new LinkedList<Node>();
+        LinkedListNode<Node> cursor;
+
+        var cursym = "@█";
+        AddLast("<0",cursym,">0");
+        var seed = 1;
+        
+        cursor = root.Find(cursym);
+        
+        
+        void AddLast(params string[] nodes)
+        {
+            foreach (var node in nodes)
+            {
+                root.AddLast(node);
+            }
+        }
+        void Insert(OneOf<IEnumerable<char>, IEnumerable<string>> args)
+        {
+            args.Match(txt =>
+            {
+                foreach (var c in txt)
+                {
+                    root.AddBefore(cursor, c.ToString());
+                }
+
+                return true;
+            }, words =>
+            {
+                var loc = cursor;
+                foreach (var s in words)
+                {
+                    loc = root.AddAfter(loc, s);
+                }
+
+                return true;
+            });
+            Print();
+        }
+
+        void Move(Direction direction)
+        {
+            LinkedListNode<Node> n;
+            switch (direction)
+            {
+                case Direction.Left:
+                    n = cursor.Previous;
+                    if (n.Value.Data.AsT1=="<0") return ;
+                    cursor.Previous.SwapWith(cursor);
+                    break;
+                case Direction.Right:
+                    n = cursor.Next;
+                    if (n.Value.Data.AsT1==">0") return ;
+                    cursor.Next.SwapWith(cursor);
+                    break;
+                case Direction.Up:
+                    break;
+                case Direction.Down:
+                    break;
+            }
+            Print();
+        }
+        void InsertCell()
+        {
+            var strs = enu("<" + seed, ">" + seed);
+            seed++;
+            Insert(strs);
+            Print();
+        }
+
+        void Print()
+        {
+            foreach (var n in root)
+            {
+                Console.Write(n.Data.Value+" ");
+            }
+
+            Console.WriteLine();
+        }
+        Insert("hi");
+        InsertCell();
+        Move(Direction.Right);
+        
+    }
+    //public static Shadow operator +(Shadow s,string other) => s;
+    //public static implicit operator Shadow(string tag) => new() { Tag = tag };
+}
+
 public partial class App : Application
 {
     public static MainWindow Win { get; set; }
@@ -85,7 +224,7 @@ public partial class App : Application
         }
         
         //todo: tiny todo app
-        
+        var shadow = new Doc();
         new WrapPanel().Var(out var pnl);
         pnl.Height=Double.NaN;
         pnl.Width=Double.NaN;
@@ -96,8 +235,6 @@ public partial class App : Application
         var root = sv;
         var cur = new TextBlock() { Tag = "cursor", Text = "█" };
         pnl.Children.Add(cur);
-        
-        
 
         void onCommand(string cmd)
         {
