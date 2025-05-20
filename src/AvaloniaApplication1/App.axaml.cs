@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Diagnostics;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
@@ -17,153 +18,86 @@ using Jint.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using static UI;
 using static Ext;
+using static Node;
 using ValueOf;
 using OneOf;
-//namespace AvaloniaApplication1;
 
-public class Node1 : ValueOf<string, Node1>
-{
-    
-    public static implicit operator Node1(string c)
-    {
-        return From(c);
-    }
-}
-
+[DebuggerDisplay("{Data}")]
 public record Node
 {
-    public OneOf<char, string> Data;
-
+    public object Data;
+    public Node Next { get; set; }
+    public Node Prev { get; set; }
     public static implicit operator Node(char c)
     {
         return new Node() { Data = c };
     }
+
     public static implicit operator Node(string c)
     {
         return new Node() { Data = c };
     }
-    
-}
-public class Derp<T>
-{
-    public Action<T> Value;
-    public static implicit operator Derp<T>(Action<T> func)
-    {
-        return new Derp<T>() { Value = func };
-    }
-    public static Derp<T> operator +(Derp<T> a, T arg)
-    {
-        a.Value(arg);
-        return a;
-    }
-}
-public static partial class Ext
-{
-    
-}
 
-public enum Direction
-{
-    Left,
-    Right,
-    Up,
-    Down,
-}
-public class Doc
-{
-    public Doc()
+    public static Node[] N(params Node[] nodes)
     {
-        var root = new LinkedList<Node>();
-        LinkedListNode<Node> cursor;
+        return nodes;
+    }
 
-        var cursym = "@█";
-        AddLast("<0",cursym,">0");
-        var seed = 1;
-        
-        cursor = root.Find(cursym);
-        
-        
-        void AddLast(params string[] nodes)
+    public static void E(params Node[] nodes)
+    {
+        for (int i = 1; i < nodes.Length; i++)
         {
-            foreach (var node in nodes)
+            Edge(nodes[i-1], nodes[i]);
+        }
+    }
+
+    public void InsBef(params Node[] nodes)
+    {
+        E([Prev,.. nodes, this ]); // 
+    }
+
+    public void InsAft(params Node[] nodes)
+    {
+        E([this,.. nodes, Next ]);
+    }
+    public static void Edge(Node a, Node b)
+    {
+        a.Next = b;
+        b.Prev = a;
+    }
+
+    public IEnumerable<Node> All()
+    {
+        IEnumerable<Node> Prevs()
+        {
+            var cur = Prev;
+            while (cur != null)
             {
-                root.AddLast(node);
+                yield return cur;
+                cur = cur.Prev;
             }
         }
-        void Insert(OneOf<IEnumerable<char>, IEnumerable<string>> args)
+
+        IEnumerable<Node> Nexts()
         {
-            args.Match(txt =>
+            var cur = Next;
+            while (cur != null)
             {
-                foreach (var c in txt)
-                {
-                    root.AddBefore(cursor, c.ToString());
-                }
-
-                return true;
-            }, words =>
-            {
-                var loc = cursor;
-                foreach (var s in words)
-                {
-                    loc = root.AddAfter(loc, s);
-                }
-
-                return true;
-            });
-            Print();
-        }
-
-        void Move(Direction direction)
-        {
-            LinkedListNode<Node> n;
-            switch (direction)
-            {
-                case Direction.Left:
-                    n = cursor.Previous;
-                    if (n.Value.Data.AsT1=="<0") return ;
-                    cursor.Previous.SwapWith(cursor);
-                    break;
-                case Direction.Right:
-                    n = cursor.Next;
-                    if (n.Value.Data.AsT1==">0") return ;
-                    cursor.Next.SwapWith(cursor);
-                    break;
-                case Direction.Up:
-                    break;
-                case Direction.Down:
-                    break;
+                yield return cur;
+                cur = cur.Next;
             }
-            Print();
         }
-        void InsertCell()
-        {
-            var strs = enu("<" + seed, ">" + seed);
-            seed++;
-            Insert(strs);
-            Print();
-        }
-
-        void Print()
-        {
-            foreach (var n in root)
-            {
-                Console.Write(n.Data.Value+" ");
-            }
-
-            Console.WriteLine();
-        }
-        Insert("hi");
-        InsertCell();
-        Move(Direction.Right);
-        
+        return Prevs().Reverse().Concat([this]).Concat(Nexts());
     }
-    //public static Shadow operator +(Shadow s,string other) => s;
-    //public static implicit operator Shadow(string tag) => new() { Tag = tag };
+
+    public string AllStr()
+    {
+        return All().Select(n => n.Data.ToString())._Join(" ");
+    }
 }
 
 public partial class App : Application
 {
-    public static MainWindow Win { get; set; }
     public static readonly IServiceProvider? ServiceProvider = BuildDependencyGraph()
         .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
@@ -191,6 +125,7 @@ public partial class App : Application
                 .AllowClr()
             );
             var serializer = new JsonSerializer(engine);
+
             string Eval(string? txt)
             {
                 try
@@ -222,129 +157,239 @@ public partial class App : Application
                 }
             }
         }
-        
-        //todo: tiny todo app
-        var shadow = new Doc();
-        new WrapPanel().Var(out var pnl);
-        pnl.Height=Double.NaN;
-        pnl.Width=Double.NaN;
-        new ScrollViewer().Var(out var sv);
-        
-        sv.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
-        sv.Content = pnl;
-        var root = sv;
-        var cur = new TextBlock() { Tag = "cursor", Text = "█" };
-        pnl.Children.Add(cur);
 
-        void onCommand(string cmd)
+        Action<string> onCommand = s => { };
+        Control root = new TextBlock();
+        var (r1, cur, r2) = N("<0", "@█", ">0");
+        E(r1, cur, r2);
+        cur.InsBef([.."hi"]);
+        cur.InsAft([.."there"]);
+        Console.WriteLine(cur.AllStr());
+        void DocumentModel()
         {
-            Console.WriteLine(cmd);
-            var parent = cur.GetLogicalParent() as Panel;
-            var ix =pnl.Children.IndexOf(cur);
+            var root = new LinkedList<Node>();
+            LinkedListNode<Node> cursor;
 
-            void newLine()
+            var cursym = "@█";
+            
+            AddLast("<0", cursym, ">0");
+            var seed = 1;
+            
+            cursor = root.Find(cursym);
+
+
+            void AddLast(params string[] nodes)
             {
-                var ctrl = new TextBlock()
+                foreach (var node in nodes)
                 {
-                    Text = new string(' ',10000),
-                    Margin = new Thickness(0), Padding = new Thickness(0),
-                    Background = new SolidColorBrush(Colors.Red),
-                };
-                parent.Children.Insert(ix,ctrl);
+                    root.AddLast(node);
+                }
             }
 
-            void backSpace()
+            void Insert(OneOf<IEnumerable<char>, IEnumerable<string>> args)
             {
-                if (ix > 0) parent.Children.RemoveAt(ix-1);
+                args.Match(txt =>
+                {
+                    foreach (var c in txt)
+                    {
+                        root.AddBefore(cursor, c.ToString());
+                    }
+
+                    return true;
+                }, words =>
+                {
+                    var loc = cursor;
+                    foreach (var s in words)
+                    {
+                        loc = root.AddAfter(loc, s);
+                    }
+
+                    return true;
+                });
+                Print();
             }
 
-            void delete()
+            void Move(Direction direction)
             {
-                if (ix<parent.Children.Count-1) parent.Children.RemoveAt(ix+1);
+                LinkedListNode<Node> n;
+                switch (direction)
+                {
+                    case Direction.Left:
+                        n = cursor.Previous;
+                        if (n.Value.Data == "<0") return;
+                        cursor.Previous.SwapWith(cursor);
+                        break;
+                    case Direction.Right:
+                        n = cursor.Next;
+                        if (n.Value.Data == ">0") return;
+                        cursor.Next.SwapWith(cursor);
+                        break;
+                    case Direction.Up:
+                        break;
+                    case Direction.Down:
+                        break;
+                }
+
+                Print();
             }
 
-            void cursorLeft()
+            void Delete()
             {
-                if (ix > 0) Swap(pnl,ix);
             }
 
-            void cursorRight()
+            void InsertCell()
             {
-                if (ix < parent.Children.Count - 1) Swap(pnl, ix+1);
+                var strs = enu("<" + seed, ">" + seed);
+                seed++;
+                Insert(strs);
+                Print();
             }
 
-            void writeChar()
+            void Print()
             {
-                var tb = new TextBlock() { Text = cmd, Margin = new Thickness(0), Padding = new Thickness(0)};
-                parent.Children.Insert(ix,tb);
+                foreach (var n in root)
+                {
+                    Console.Write(n.Data + " ");
+                }
+
+                Console.WriteLine();
             }
-            switch (cmd)
-            {
-                case "enter": 
-                    newLine();
-                    break;
-                case "back":
-                    backSpace();
-                    break;
-                case "delete":
-                    delete();
-                    break;
-                case "left":
-                    cursorLeft();
-                    break;
-                case "right":
-                    cursorRight();
-                    break;
-                default:
-                    writeChar();
-                    break;
-            }
+
+            Insert("hi");
+            InsertCell();
+            Move(Direction.Right);
         }
+
+
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
             var key = args.Text;
             onCommand(key);
         }
-        void OnWinOnKeyDown(object? sender, KeyEventArgs args)
+
+        void OnKeyDown(object? sender, KeyEventArgs args)
         {
             var txt = "";
             if (args.KeyModifiers.HasFlag(KeyModifiers.Control)) txt += "control+";
             if (args.KeyModifiers.HasFlag(KeyModifiers.Shift)) txt += "shift+";
             switch (args.Key)
             {
-                case Key.Enter: onCommand(txt+"enter"); break;
-                case Key.Back: onCommand(txt+"back"); break;
-                case Key.Left: onCommand(txt+"left"); break;
-                case Key.Right: onCommand(txt+"right"); break;
-                case Key.Delete: onCommand(txt+"delete"); break;
+                case Key.Enter: onCommand(txt + "enter"); break;
+                case Key.Back: onCommand(txt + "back"); break;
+                case Key.Left: onCommand(txt + "left"); break;
+                case Key.Right: onCommand(txt + "right"); break;
+                case Key.Delete: onCommand(txt + "delete"); break;
             }
         }
-        
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+
+        switch (ApplicationLifetime)
         {
-            new MainWindow().Var(out MainWindow win);
-            win.FontFamily = new FontFamily("Courier New");
-
-            win.Content = root;
-            Win = win;
-            desktop.MainWindow = win;
-            win.TextInput += OnTextInput;
-            win.KeyDown += OnWinOnKeyDown;
-            
+            case IClassicDesktopStyleApplicationLifetime app:
+            {
+                new MainWindow().Var(out var o);
+                o.FontFamily = new FontFamily("Courier New");
+                o.Content = root;
+                app.MainWindow = o;
+                o.TextInput += OnTextInput;
+                o.KeyDown += OnKeyDown;
+                break;
+            }
+            case ISingleViewApplicationLifetime app:
+            {
+                new MainView().Var(out var o);
+                o.FontFamily = new FontFamily("Courier New");
+                o.Content = root;
+                app.MainView = o;
+                o.TextInput += OnTextInput;
+                o.KeyDown += OnKeyDown;
+                break;
+            }
         }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new MainView().Var(out var mv);
-            mv.FontFamily = new FontFamily("Courier New");
 
-            mv.Content = root;
-            mv.TextInput += OnTextInput;
-            mv.KeyDown += OnWinOnKeyDown;
-
-        }
-        
         base.OnFrameworkInitializationCompleted();
-        
+
+        void oldCode()
+        {
+            new WrapPanel().Var(out var pnl);
+            pnl.Height = Double.NaN;
+            pnl.Width = Double.NaN;
+            new ScrollViewer().Var(out var sv);
+
+            sv.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+            sv.Content = pnl;
+            var scrollViewer = sv;
+            var cur = new TextBlock() { Tag = "cursor", Text = "█" };
+            pnl.Children.Add(cur);
+
+            void onCommand1(string cmd)
+            {
+                Console.WriteLine(cmd);
+                var parent = cur.GetLogicalParent() as Panel;
+                var ix = pnl.Children.IndexOf(cur);
+
+                void newLine()
+                {
+                    var ctrl = new TextBlock()
+                    {
+                        Text = new string(' ', 10000),
+                        Margin = new Thickness(0), Padding = new Thickness(0),
+                        Background = new SolidColorBrush(Colors.Red),
+                    };
+                    parent.Children.Insert(ix, ctrl);
+                }
+
+                void backSpace()
+                {
+                    if (ix > 0) parent.Children.RemoveAt(ix - 1);
+                }
+
+                void delete()
+                {
+                    if (ix < parent.Children.Count - 1) parent.Children.RemoveAt(ix + 1);
+                }
+
+                void cursorLeft()
+                {
+                    if (ix > 0) Swap(pnl, ix);
+                }
+
+                void cursorRight()
+                {
+                    if (ix < parent.Children.Count - 1) Swap(pnl, ix + 1);
+                }
+
+                void writeChar()
+                {
+                    var tb = new TextBlock() { Text = cmd, Margin = new Thickness(0), Padding = new Thickness(0) };
+                    parent.Children.Insert(ix, tb);
+                }
+
+                switch (cmd)
+                {
+                    case "enter":
+                        newLine();
+                        break;
+                    case "back":
+                        backSpace();
+                        break;
+                    case "delete":
+                        delete();
+                        break;
+                    case "left":
+                        cursorLeft();
+                        break;
+                    case "right":
+                        cursorRight();
+                        break;
+                    default:
+                        writeChar();
+                        break;
+                }
+            }
+
+            onCommand = onCommand1;
+            root = scrollViewer;
+        }
     }
 
     static void Swap(Panel pnl, int ix)
@@ -358,7 +403,6 @@ public partial class App : Application
 
     static void ScriptExample(MainWindow win)
     {
-            
         dynamic calc = CSScript.Evaluator.ReferenceDomainAssemblies()
             .LoadCode(
                 @"
@@ -386,7 +430,7 @@ public class Script : ICalc
         result(win.Content as Panel);
     }
 
-    private void DisableAvaloniaDataAnnotationValidation()
+    void DisableAvaloniaDataAnnotationValidation()
     {
         // Get an array of plugins to remove
         var dataValidationPluginsToRemove =
@@ -398,6 +442,16 @@ public class Script : ICalc
             BindingPlugins.DataValidators.Remove(plugin);
         }
     }
-    
 }
 
+public static partial class Ext
+{
+}
+
+public enum Direction
+{
+    Left,
+    Right,
+    Up,
+    Down,
+}
