@@ -21,54 +21,125 @@ using static Ext;
 using static Node;
 using ValueOf;
 using OneOf;
+using OneOf.Types;
 
 [DebuggerDisplay("{Data}")]
-public record Node
+public class Node
 {
     public object Data;
-    public Node Next { get; set; }
-    public Node Prev { get; set; }
+    public Node? Prev { get; set; }
+    public Node? Next { get; set; }
+    public Node? Parent { get; set; }
+    public Node? Partner { get; set; }
+    public static int Seed = 1;
     public static implicit operator Node(char c)
     {
         return new Node() { Data = c };
     }
-
     public static implicit operator Node(string c)
     {
         return new Node() { Data = c };
     }
 
+    public bool IsRoot => Parent == null;
+    public bool IsOpen => Equals(Data,"<");
+    public bool IsClose => Equals(Data,">");
     public static Node[] N(params Node[] nodes)
     {
         return nodes;
     }
 
-    public static void E(params Node[] nodes)
+    public static Node CreateCursor()
+    {
+        Node cur = "@█";
+        var (ro, rc) = N("<", ">");
+        ro.PartnerWith(rc);
+        E(ro, cur, rc);
+        cur.Parent = ro;
+        return cur;
+    }
+
+    public static Node[] Cell()
+    {
+        var (o, c) = N("<", ">");
+        o.PartnerWith(c);
+        return [o,c];
+    }
+    public Node PartnerWith(Node other)
+    {
+        Partner = other;
+        other.Partner = this;
+        return this;
+    }
+
+    public Node InsertAtom(Node node)
+    {
+        //prev=>cursor
+        //prev=>new=>cursor
+        E(Prev, node, this);
+        node.Parent = Parent;
+        return node;
+    }
+
+    public Node InsertCell()
+    {
+        var (co, cc) = Cell();
+        co.Parent = cc.Parent = Parent;
+        E(this,co, cc,Next);
+        return this;
+    }
+    public static IEnumerable<Node> E(params Node[] nodes)
     {
         for (int i = 1; i < nodes.Length; i++)
         {
             Edge(nodes[i-1], nodes[i]);
         }
+        return nodes;
     }
 
-    public void InsBef(params Node[] nodes)
+    public void MoveForward()
     {
-        E([Prev,.. nodes, this ]); // 
+        if (Next.IsRoot) return;
+        if (Next.IsOpen)
+        {
+            //< cur < > >
+            //< < cur > >
+            Parent = Next;
+        }
+
+        if (Next.IsClose)
+        {
+            //< < cur > >
+            //< < > cur >
+            Parent = Next.Parent;
+        }
+        E(Prev, Next, this, Next.Next);
     }
 
-    public void InsAft(params Node[] nodes)
+    public void MoveBack()
     {
-        E([this,.. nodes, Next ]);
+        if (Prev.IsRoot) return;
+        if (Prev.IsOpen)
+        {
+            Parent = Prev.Parent;
+        }
+
+        if (Prev.IsClose)
+        {
+            Parent = Prev.Partner;
+        }
+
+        E(Prev.Prev, this, Prev, Next);
     }
     public static void Edge(Node a, Node b)
     {
-        a.Next = b;
-        b.Prev = a;
+        if (a!=null) a.Next = b;
+        if (b!=null) b.Prev = a;
     }
 
-    public IEnumerable<Node> All()
+    public IEnumerable<Node> Nodes()
     {
-        IEnumerable<Node> Prevs()
+        IEnumerable<Node> Before()
         {
             var cur = Prev;
             while (cur != null)
@@ -77,8 +148,7 @@ public record Node
                 cur = cur.Prev;
             }
         }
-
-        IEnumerable<Node> Nexts()
+        IEnumerable<Node> After()
         {
             var cur = Next;
             while (cur != null)
@@ -87,12 +157,12 @@ public record Node
                 cur = cur.Next;
             }
         }
-        return Prevs().Reverse().Concat([this]).Concat(Nexts());
+        return Before().Reverse().Concat([this,..After()]);
     }
 
-    public string AllStr()
+    public string NodesStr()
     {
-        return All().Select(n => n.Data.ToString())._Join(" ");
+        return Nodes().Select(n => n.Data.ToString())._Join(" ");
     }
 }
 
@@ -160,11 +230,11 @@ public partial class App : Application
 
         Action<string> onCommand = s => { };
         Control root = new TextBlock();
-        var (r1, cur, r2) = N("<0", "@█", ">0");
-        E(r1, cur, r2);
-        cur.InsBef([.."hi"]);
-        cur.InsAft([.."there"]);
-        Console.WriteLine(cur.AllStr());
+        var seed = 1;
+        var cursor = CreateCursor();
+        
+        
+        Console.WriteLine(cursor.NodesStr());
         void DocumentModel()
         {
             var root = new LinkedList<Node>();
@@ -173,7 +243,6 @@ public partial class App : Application
             var cursym = "@█";
             
             AddLast("<0", cursym, ">0");
-            var seed = 1;
             
             cursor = root.Find(cursym);
 
@@ -446,6 +515,7 @@ public class Script : ICalc
 
 public static partial class Ext
 {
+    
 }
 
 public enum Direction
