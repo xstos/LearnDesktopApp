@@ -100,35 +100,16 @@ public class Node
     public void MoveForward()
     {
         if (Next.IsRoot) return;
-        if (Next.IsOpen)
-        {
-            //< cur < > >
-            //< < cur > >
-            Parent = Next;
-        }
-
-        if (Next.IsClose)
-        {
-            //< < cur > >
-            //< < > cur >
-            Parent = Next.Parent;
-        }
+        if (Next.IsOpen) Parent = Next;
+        if (Next.IsClose) Parent = Next.Parent;
         E(Prev, Next, this, Next.Next);
     }
 
     public void MoveBack()
     {
         if (Prev.IsRoot) return;
-        if (Prev.IsOpen)
-        {
-            Parent = Prev.Parent;
-        }
-
-        if (Prev.IsClose)
-        {
-            Parent = Prev.Partner;
-        }
-
+        if (Prev.IsOpen) Parent = Prev.Parent;
+        if (Prev.IsClose) Parent = Prev.Partner;
         E(Prev.Prev, this, Prev, Next);
     }
     public static void Edge(Node a, Node b)
@@ -229,106 +210,30 @@ public partial class App : Application
         }
 
         Action<string> onCommand = s => { };
-        Control root = new TextBlock();
+        var txt = new TextBlock();
+        Control root = txt;
         var seed = 1;
         var cursor = CreateCursor();
-        
-        
-        Console.WriteLine(cursor.NodesStr());
-        void DocumentModel()
+
+        onCommand = s =>
         {
-            var root = new LinkedList<Node>();
-            LinkedListNode<Node> cursor;
-
-            var cursym = "@█";
+            switch (s)
+            {
+                case "left": cursor.MoveBack();
+                    break;
+                case "right": cursor.MoveForward();
+                    break;
+                case "enter": cursor.InsertCell();
+                    break;
+                default: 
+                    cursor.InsertAtom(s);
+                    break;
+            }
             
-            AddLast("<0", cursym, ">0");
-            
-            cursor = root.Find(cursym);
-
-
-            void AddLast(params string[] nodes)
-            {
-                foreach (var node in nodes)
-                {
-                    root.AddLast(node);
-                }
-            }
-
-            void Insert(OneOf<IEnumerable<char>, IEnumerable<string>> args)
-            {
-                args.Match(txt =>
-                {
-                    foreach (var c in txt)
-                    {
-                        root.AddBefore(cursor, c.ToString());
-                    }
-
-                    return true;
-                }, words =>
-                {
-                    var loc = cursor;
-                    foreach (var s in words)
-                    {
-                        loc = root.AddAfter(loc, s);
-                    }
-
-                    return true;
-                });
-                Print();
-            }
-
-            void Move(Direction direction)
-            {
-                LinkedListNode<Node> n;
-                switch (direction)
-                {
-                    case Direction.Left:
-                        n = cursor.Previous;
-                        if (n.Value.Data == "<0") return;
-                        cursor.Previous.SwapWith(cursor);
-                        break;
-                    case Direction.Right:
-                        n = cursor.Next;
-                        if (n.Value.Data == ">0") return;
-                        cursor.Next.SwapWith(cursor);
-                        break;
-                    case Direction.Up:
-                        break;
-                    case Direction.Down:
-                        break;
-                }
-
-                Print();
-            }
-
-            void Delete()
-            {
-            }
-
-            void InsertCell()
-            {
-                var strs = enu("<" + seed, ">" + seed);
-                seed++;
-                Insert(strs);
-                Print();
-            }
-
-            void Print()
-            {
-                foreach (var n in root)
-                {
-                    Console.Write(n.Data + " ");
-                }
-
-                Console.WriteLine();
-            }
-
-            Insert("hi");
-            InsertCell();
-            Move(Direction.Right);
-        }
-
+            txt.Text = cursor.NodesStr();
+        };
+        Console.WriteLine(cursor.NodesStr());
+        
 
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
@@ -343,12 +248,15 @@ public partial class App : Application
             if (args.KeyModifiers.HasFlag(KeyModifiers.Shift)) txt += "shift+";
             switch (args.Key)
             {
-                case Key.Enter: onCommand(txt + "enter"); break;
-                case Key.Back: onCommand(txt + "back"); break;
-                case Key.Left: onCommand(txt + "left"); break;
-                case Key.Right: onCommand(txt + "right"); break;
-                case Key.Delete: onCommand(txt + "delete"); break;
+                case Key.Enter: txt += "enter"; break;
+                case Key.Back: txt += "back"; break;
+                case Key.Left: txt += "left"; break;
+                case Key.Right: txt += "right"; break;
+                case Key.Delete: txt += "delete"; break;
+                default: return;
             }
+
+            onCommand(txt);
         }
 
         switch (ApplicationLifetime)
