@@ -44,6 +44,7 @@ public class Node
     public bool IsRoot => Parent == null;
     public bool IsOpen => Equals(Data,"<");
     public bool IsClose => Equals(Data,">");
+    public bool IsAtom => !IsOpen && !IsClose;
     public static Node[] N(params Node[] nodes)
     {
         return nodes;
@@ -97,21 +98,55 @@ public class Node
         return nodes;
     }
 
-    public void MoveForward()
+    public Node MoveForward()
     {
-        if (Next.IsRoot) return;
+        if (Next.IsRoot) return this;
         if (Next.IsOpen) Parent = Next;
         if (Next.IsClose) Parent = Next.Parent;
         E(Prev, Next, this, Next.Next);
+        return this;
     }
 
-    public void MoveBack()
+    public Node MoveBack()
     {
-        if (Prev.IsRoot) return;
+        if (Prev.IsRoot) return this;
         if (Prev.IsOpen) Parent = Prev.Parent;
         if (Prev.IsClose) Parent = Prev.Partner;
         E(Prev.Prev, this, Prev, Next);
+        return this;
     }
+
+    public void Clear()
+    {
+        Prev = null;
+        Next = null;
+        Parent = null;
+        Partner = null;
+    }
+    public Node Backspace()
+    {
+        var prev = Prev;
+        if (prev.IsAtom)
+        {
+            E(prev.Prev, this);
+            prev.Clear();
+        }
+
+        return this;
+    }
+
+    public Node Delete()
+    {
+        var next = Next;
+        if (next.IsAtom)
+        {
+            E(this, next.Next);
+            next.Clear();
+        }
+
+        return this;
+    }
+    
     public static void Edge(Node a, Node b)
     {
         if (a!=null) a.Next = b;
@@ -166,6 +201,82 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Action<string> onCommand = s => { };
+        var txt = new TextBlock();
+        Control root = txt;
+        var seed = 1;
+        var cursor = CreateCursor();
+
+        void refresh()
+        {
+            txt.Text = cursor.NodesStr();
+        }
+        onCommand = s =>
+        {
+            if (s == "left")
+                cursor.MoveBack();
+            else if (s == "right")
+                cursor.MoveForward();
+            else if (s == "enter")
+                cursor.InsertCell();
+            else if (s == "back")
+                cursor.Backspace();
+            else if (s == "delete")
+                cursor.Delete();
+            else
+                cursor.InsertAtom(s);
+            refresh();
+        };
+        Console.WriteLine(cursor.NodesStr());
+        
+        void OnTextInput(object? sender, TextInputEventArgs args)
+        {
+            var key = args.Text;
+            onCommand(key);
+        }
+
+        void OnKeyDown(object? sender, KeyEventArgs args)
+        {
+            var txt = "";
+            if (args.KeyModifiers.HasFlag(KeyModifiers.Control)) txt += "control+";
+            if (args.KeyModifiers.HasFlag(KeyModifiers.Shift)) txt += "shift+";
+            switch (args.Key)
+            {
+                case Key.Enter: txt += "enter"; break;
+                case Key.Back: txt += "back"; break;
+                case Key.Left: txt += "left"; break;
+                case Key.Right: txt += "right"; break;
+                case Key.Delete: txt += "delete"; break;
+                default: return;
+            }
+
+            onCommand(txt);
+        }
+        refresh();
+        switch (ApplicationLifetime)
+        {
+            case IClassicDesktopStyleApplicationLifetime app:
+            {
+                new MainWindow().Var(out var o);
+                o.FontFamily = new FontFamily("Courier New");
+                o.Content = root;
+                app.MainWindow = o;
+                o.TextInput += OnTextInput;
+                o.KeyDown += OnKeyDown;
+                break;
+            }
+            case ISingleViewApplicationLifetime app:
+            {
+                new MainView().Var(out var o);
+                o.FontFamily = new FontFamily("Courier New");
+                o.Content = root;
+                app.MainView = o;
+                o.TextInput += OnTextInput;
+                o.KeyDown += OnKeyDown;
+                break;
+            }
+        }
+
         void jsInit()
         {
             var parsingOptions = new ScriptParsingOptions
@@ -206,80 +317,6 @@ public partial class App : Application
                 {
                     return e.ToString();
                 }
-            }
-        }
-
-        Action<string> onCommand = s => { };
-        var txt = new TextBlock();
-        Control root = txt;
-        var seed = 1;
-        var cursor = CreateCursor();
-
-        onCommand = s =>
-        {
-            switch (s)
-            {
-                case "left": cursor.MoveBack();
-                    break;
-                case "right": cursor.MoveForward();
-                    break;
-                case "enter": cursor.InsertCell();
-                    break;
-                default: 
-                    cursor.InsertAtom(s);
-                    break;
-            }
-            
-            txt.Text = cursor.NodesStr();
-        };
-        Console.WriteLine(cursor.NodesStr());
-        
-
-        void OnTextInput(object? sender, TextInputEventArgs args)
-        {
-            var key = args.Text;
-            onCommand(key);
-        }
-
-        void OnKeyDown(object? sender, KeyEventArgs args)
-        {
-            var txt = "";
-            if (args.KeyModifiers.HasFlag(KeyModifiers.Control)) txt += "control+";
-            if (args.KeyModifiers.HasFlag(KeyModifiers.Shift)) txt += "shift+";
-            switch (args.Key)
-            {
-                case Key.Enter: txt += "enter"; break;
-                case Key.Back: txt += "back"; break;
-                case Key.Left: txt += "left"; break;
-                case Key.Right: txt += "right"; break;
-                case Key.Delete: txt += "delete"; break;
-                default: return;
-            }
-
-            onCommand(txt);
-        }
-
-        switch (ApplicationLifetime)
-        {
-            case IClassicDesktopStyleApplicationLifetime app:
-            {
-                new MainWindow().Var(out var o);
-                o.FontFamily = new FontFamily("Courier New");
-                o.Content = root;
-                app.MainWindow = o;
-                o.TextInput += OnTextInput;
-                o.KeyDown += OnKeyDown;
-                break;
-            }
-            case ISingleViewApplicationLifetime app:
-            {
-                new MainView().Var(out var o);
-                o.FontFamily = new FontFamily("Courier New");
-                o.Content = root;
-                app.MainView = o;
-                o.TextInput += OnTextInput;
-                o.KeyDown += OnKeyDown;
-                break;
             }
         }
 
