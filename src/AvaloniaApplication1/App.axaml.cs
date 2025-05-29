@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
@@ -23,165 +22,6 @@ using ValueOf;
 using OneOf;
 using OneOf.Types;
 
-[DebuggerDisplay("{Data}")]
-public class Node
-{
-    public object Data;
-    public Node? Prev { get; set; }
-    public Node? Next { get; set; }
-    public Node? Parent { get; set; }
-    public Node? Partner { get; set; }
-    public static int Seed = 1;
-    public static implicit operator Node(char c)
-    {
-        return new Node() { Data = c };
-    }
-    public static implicit operator Node(string c)
-    {
-        return new Node() { Data = c };
-    }
-
-    public bool IsRoot => Parent == null;
-    public bool IsOpen => Equals(Data,"<");
-    public bool IsClose => Equals(Data,">");
-    public bool IsAtom => !IsOpen && !IsClose;
-    public static Node[] N(params Node[] nodes)
-    {
-        return nodes;
-    }
-
-    public static Node CreateCursor()
-    {
-        Node cur = "@█";
-        var (ro, rc) = N("<", ">");
-        ro.PartnerWith(rc);
-        E(ro, cur, rc);
-        cur.Parent = ro;
-        return cur;
-    }
-
-    public static Node[] Cell()
-    {
-        var (o, c) = N("<", ">");
-        o.PartnerWith(c);
-        return [o,c];
-    }
-    public Node PartnerWith(Node other)
-    {
-        Partner = other;
-        other.Partner = this;
-        return this;
-    }
-
-    public Node InsertAtom(Node node)
-    {
-        //prev=>cursor
-        //prev=>new=>cursor
-        E(Prev, node, this);
-        node.Parent = Parent;
-        return node;
-    }
-
-    public Node InsertCell()
-    {
-        var (co, cc) = Cell();
-        co.Parent = cc.Parent = Parent;
-        E(this,co, cc,Next);
-        return this;
-    }
-    public static IEnumerable<Node> E(params Node[] nodes)
-    {
-        for (int i = 1; i < nodes.Length; i++)
-        {
-            Edge(nodes[i-1], nodes[i]);
-        }
-        return nodes;
-    }
-
-    public Node MoveForward()
-    {
-        if (Next.IsRoot) return this;
-        if (Next.IsOpen) Parent = Next;
-        if (Next.IsClose) Parent = Next.Parent;
-        E(Prev, Next, this, Next.Next);
-        return this;
-    }
-
-    public Node MoveBack()
-    {
-        if (Prev.IsRoot) return this;
-        if (Prev.IsOpen) Parent = Prev.Parent;
-        if (Prev.IsClose) Parent = Prev.Partner;
-        E(Prev.Prev, this, Prev, Next);
-        return this;
-    }
-
-    public void Clear()
-    {
-        Prev = null;
-        Next = null;
-        Parent = null;
-        Partner = null;
-    }
-    public Node Backspace()
-    {
-        var prev = Prev;
-        if (prev.IsAtom)
-        {
-            E(prev.Prev, this);
-            prev.Clear();
-        }
-
-        return this;
-    }
-
-    public Node Delete()
-    {
-        var next = Next;
-        if (next.IsAtom)
-        {
-            E(this, next.Next);
-            next.Clear();
-        }
-
-        return this;
-    }
-    
-    public static void Edge(Node a, Node b)
-    {
-        if (a!=null) a.Next = b;
-        if (b!=null) b.Prev = a;
-    }
-
-    public IEnumerable<Node> Nodes()
-    {
-        IEnumerable<Node> Before()
-        {
-            var cur = Prev;
-            while (cur != null)
-            {
-                yield return cur;
-                cur = cur.Prev;
-            }
-        }
-        IEnumerable<Node> After()
-        {
-            var cur = Next;
-            while (cur != null)
-            {
-                yield return cur;
-                cur = cur.Next;
-            }
-        }
-        return Before().Reverse().Concat([this,..After()]);
-    }
-
-    public string NodesStr()
-    {
-        return Nodes().Select(n => n.Data.ToString())._Join(" ");
-    }
-}
-
 public partial class App : Application
 {
     public static readonly IServiceProvider? ServiceProvider = BuildDependencyGraph()
@@ -198,12 +38,19 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
     }
-
+    
     public override void OnFrameworkInitializationCompleted()
     {
         Action<string> onCommand = s => { };
+        var dockPanel = new DockPanel();
+        var console = new TextBlock();
         var txt = new TextBlock();
-        Control root = txt;
+        dockPanel.Children.Add(console);
+
+        dockPanel.Children.Add(txt);
+        console._Dock(Dock.Right);
+        
+        Control root = dockPanel;
         var seed = 1;
         var cursor = CreateCursor();
 
@@ -211,23 +58,24 @@ public partial class App : Application
         {
             txt.Text = cursor.NodesStr();
         }
+
+        const string ctrl = "control";
         onCommand = s =>
         {
-            if (s == "left")
-                cursor.MoveBack();
-            else if (s == "right")
-                cursor.MoveForward();
-            else if (s == "enter")
-                cursor.InsertCell();
-            else if (s == "back")
-                cursor.Backspace();
-            else if (s == "delete")
-                cursor.Delete();
-            else
-                cursor.InsertAtom(s);
+            _ = s switch
+            {
+                "left" => cursor.MoveBack(),
+                "right" => cursor.MoveForward(),
+                "enter" => cursor.InsertCell(),
+                "back" => cursor.Backspace(),
+                "delete" => cursor.DeleteAtom(),
+                $"{ctrl}+enter" => cursor.InsertAtom("\n"),
+                $"{ctrl}+delete" => cursor.DeleteCell(),
+                _ => cursor.InsertAtom(s.Length<2 ? Convert.ToChar(s) : s)
+            };
+
             refresh();
         };
-        Console.WriteLine(cursor.NodesStr());
         
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
