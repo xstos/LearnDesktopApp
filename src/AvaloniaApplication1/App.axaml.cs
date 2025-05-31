@@ -53,7 +53,8 @@ public partial class App : Application
         
         dockPanel.Children.Add(txt);
         console._Dock(Dock.Right);
-        
+        var xaml = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(
+            File.ReadAllText("test.xaml"));
         Control root = dockPanel;
         var seed = 1;
         var cursor = CreateCursor();

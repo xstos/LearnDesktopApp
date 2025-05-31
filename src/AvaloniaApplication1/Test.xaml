@@ -1,0 +1,8 @@
+<TextBlock xmlns='https://github.com/avaloniaui'>
+    This text is <Span Foreground="Green"> green with <Bold>bold sections,</Bold>
+        <Italic>italic <Span Foreground="Red">red</Span> sections,</Italic>
+        some
+        <Run FontSize="24"> enlarged font runs,</Run>
+        and</Span>
+    back to the original formatting
+</TextBlock>

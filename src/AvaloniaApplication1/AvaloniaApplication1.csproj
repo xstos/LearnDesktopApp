@@ -44,4 +44,10 @@
 	<ItemGroup>
 	  <Folder Include="Assets\" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="Test.xaml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>
