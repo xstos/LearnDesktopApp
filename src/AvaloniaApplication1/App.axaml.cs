@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
@@ -45,18 +46,24 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var console = new TextBlock();
         var txt = new TextBlock();
-        dockPanel.Children.Add(console);
-
+        var il = new Run("hi");
+        txt.Inlines.Add(il);
+        txt.ClipToBounds = false;
+        txt.TextWrapping = TextWrapping.Wrap;
+        
         dockPanel.Children.Add(txt);
         console._Dock(Dock.Right);
         
         Control root = dockPanel;
         var seed = 1;
         var cursor = CreateCursor();
-
+        var rootNode = cursor.GetRoot();
+        var foo = "";
         void refresh()
         {
-            txt.Text = cursor.NodesStr();
+            //txt.Text = cursor.NodesStr();
+            rootNode.Render(dockPanel);
+            
         }
 
         const string ctrl = "control";

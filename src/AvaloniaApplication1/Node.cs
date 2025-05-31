@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Avalonia.Controls;
 
 [DebuggerDisplay("{Data}")]
 public class Node
@@ -18,6 +19,20 @@ public class Node
     public bool IsClose => Equals(Data,">");
     public bool IsAtom => !IsOpen && !IsClose;
 
+    public void Render(Panel parent)
+    {
+        
+    }
+    public Node GetRoot()
+    {
+        var cur = this;
+        while (cur.Parent != null)
+        {
+            cur = Parent;
+        }
+
+        return cur;
+    }
     public static Node CreateCursor()
     {
         Node cur = "█";
