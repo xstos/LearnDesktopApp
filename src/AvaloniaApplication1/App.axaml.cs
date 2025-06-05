@@ -5,6 +5,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -47,6 +48,7 @@ public partial class App : Application
         var sideList = new ListBox();
         var txt = new TextBlock();
         txt.Focusable = true;
+        
         sideList._Dock(Dock.Left);
         sideList.AddRange("hi", "there");
         sideList.SelectionChanged += (s, e) =>
@@ -54,17 +56,17 @@ public partial class App : Application
             txt.Focus();
         };
         
-        dockPanel.Children.Add(sideList);
         
-        var il = new Run("a"); 
+        /*
+         var il = new Run("a"); 
         il.FontSize = 30;
         il.Foreground = new SolidColorBrush(Colors.Yellow);
         txt.Inlines.Add(il);
-        
+        */
         txt.ClipToBounds = false;
         txt.TextWrapping = TextWrapping.Wrap;
+        dockPanel.Children.Add(sideList);
         dockPanel.Children.Add(txt);
-        
         var xaml = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(
             File.ReadAllText("test.xaml"));
         var seed = 1;
@@ -149,7 +151,15 @@ public partial class App : Application
                 o.KeyDown += OnKeyDown;
                 break;
             }
+            
         }
+
+        void OnTxtOnLoaded(object? s, RoutedEventArgs e)
+        {
+            txt.Focus(NavigationMethod.Tab);
+        }
+
+        txt.Loaded += OnTxtOnLoaded;
 
         void jsInit()
         {
@@ -195,7 +205,7 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
-
+        ;
         void oldCode()
         {
             new WrapPanel().Var(out var pnl);
