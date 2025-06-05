@@ -44,32 +44,43 @@ public partial class App : Application
     {
         Action<string> onCommand = s => { };
         var dockPanel = new DockPanel();
-        var console = new TextBlock();
+        var sideList = new ListBox();
         var txt = new TextBlock();
-        var il = new Run("hi");
+        txt.Focusable = true;
+        sideList._Dock(Dock.Left);
+        sideList.AddRange("hi", "there");
+        sideList.SelectionChanged += (s, e) =>
+        {
+            txt.Focus();
+        };
+        
+        dockPanel.Children.Add(sideList);
+        
+        var il = new Run("a"); 
+        il.FontSize = 30;
+        il.Foreground = new SolidColorBrush(Colors.Yellow);
         txt.Inlines.Add(il);
+        
         txt.ClipToBounds = false;
         txt.TextWrapping = TextWrapping.Wrap;
-        
         dockPanel.Children.Add(txt);
-        console._Dock(Dock.Right);
+        
         var xaml = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(
             File.ReadAllText("test.xaml"));
-        Control root = dockPanel;
         var seed = 1;
         var cursor = CreateCursor();
         var rootNode = cursor.GetRoot();
         var foo = "";
         void refresh()
         {
-            //txt.Text = cursor.NodesStr();
-            rootNode.Render(dockPanel);
-            
-        }
+            txt.Text = cursor.NodesStr();
 
+        }
+        
         const string ctrl = "control";
         onCommand = s =>
         {
+            if (!txt.IsFocused) return;
             _ = s switch
             {
                 "left" => cursor.MoveBack(),
@@ -103,18 +114,23 @@ public partial class App : Application
                 case Key.Left: txt += "left"; break;
                 case Key.Right: txt += "right"; break;
                 case Key.Delete: txt += "delete"; break;
+                case Key.OemTilde: txt += "tilde"; break;
                 default: return;
             }
 
             onCommand(txt);
         }
         refresh();
+        Control root = dockPanel;
+        
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime app:
             {
                 new MainWindow().Var(out var o);
                 o.FontFamily = new FontFamily("Courier New");
+                o.FontWeight = FontWeight.Bold;
+                o.FontSize = 12;
                 o.Content = root;
                 app.MainWindow = o;
                 o.TextInput += OnTextInput;
@@ -125,6 +141,8 @@ public partial class App : Application
             {
                 new MainView().Var(out var o);
                 o.FontFamily = new FontFamily("Courier New");
+                o.FontWeight = FontWeight.Bold;
+                o.FontSize = 12;
                 o.Content = root;
                 app.MainView = o;
                 o.TextInput += OnTextInput;
@@ -316,7 +334,15 @@ public class Script : ICalc
 
 public static partial class Ext
 {
-    
+    public static ListBox AddRange(this ListBox list, params string[] items)
+    {
+        foreach (var item in items)
+        {
+            list.Items.Add(item);
+        }
+
+        return list;
+    }
 }
 
 public enum Direction

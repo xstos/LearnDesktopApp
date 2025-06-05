@@ -3,6 +3,6 @@
              xmlns:local="using:AvaloniaApplication1" RequestedThemeVariant="Default">
     <Application.Styles>
         <dialogHost:DialogHostStyles />
-        <FluentTheme />
+        <FluentTheme DensityStyle="Compact"/>
     </Application.Styles>
 </Application>

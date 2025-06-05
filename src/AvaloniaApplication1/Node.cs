@@ -9,7 +9,6 @@ public class Node
     public Node? Next { get; set; }
     public Node? Parent { get; set; }
     public Node? Partner { get; set; }
-    public static int Seed = 1;
     public static implicit operator Node(char c) => new() { Data = c };
     public static implicit operator Node(string c) => new() { Data = c };
     public static Node[] N(params Node[] nodes) => nodes;
@@ -19,9 +18,21 @@ public class Node
     public bool IsClose => Equals(Data,">");
     public bool IsAtom => !IsOpen && !IsClose;
 
-    public void Render(Panel parent)
+    public void RenderAll()
     {
         
+    }
+
+    public void ForEachNode(Action<Node> action)
+    {
+        var root = GetRoot();
+        var partner = root.Partner;
+        var n = root.Next;
+        while (n != partner)
+        {
+            action(n);
+            n = n.Next;
+        }
     }
     public Node GetRoot()
     {
