@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using OneOf.Types;
 
-[DebuggerDisplay("{Data}")]
+[DebuggerDisplay("{Data} {NodeStr}")]
 public class Node
 {
     public const string cursorSymbol = "█";
@@ -14,7 +14,7 @@ public class Node
     public Node? Next { get; set; }
     public Node? Parent { get; set; }
     public Node? Partner { get; set; }
-    public Node? LastCursorPos { get; set; }
+    public Node? LastCursor { get; set; }
     
     public static implicit operator Node(char c) => new() { Data = c };
     public static implicit operator Node(string c) => new() { Data = c };
@@ -43,7 +43,7 @@ public class Node
         ro.PartnerWith(rc);
         E(ro, cur, rc);
         cur.Parent = ro;
-        ro.LastCursorPos = cur;
+        ro.LastCursor = cur;
         return (ro,cur,rc);
     }
     public static (Node,Node) CreateCell()
@@ -85,7 +85,23 @@ public class Node
         GC.Collect();
         return nodes;
     }
-    
+
+    public void ClearLastCursor()
+    {
+        LastCursor?.Remove();
+        LastCursor = null;
+    }
+    public static Node MakeHistoryCursor() => historyCursor;
+
+    public Node MakeInsertHistoryCursor()
+    {
+        var hist = MakeHistoryCursor();
+        InsertAtom(hist);
+        Parent.LastCursor = hist;
+        return hist;
+    }
+
+    public string NodeStr => Nodes().Select(n => n.Data + "")._Join("");
     public Node MoveForward()
     {
         var next = Next;
@@ -93,25 +109,40 @@ public class Node
         
         if (next.IsOpen)
         {
-            //<derp█<hello>there>
+            //<derp█<hel▒lo>there>
             var oldParent = Parent;
-            Node hist = historyCursor;
-            InsertAtom(hist);
-            oldParent.LastCursorPos = hist;
-            Parent = next;
-            next.LastCursorPos?.Remove();
+            var newParent = next;
+            newParent.ClearLastCursor();
+            //<derp█<hello>there>
+            var hist = MakeInsertHistoryCursor();
+            oldParent.LastCursor = hist;
+            //<derp▒█<hello>there>
             E(hist,next,this,next.Next);
+            Parent = next;
+            next.LastCursor = this;
+            //<derp▒<█hello>there>
         }
 
         if (next.IsClose)
         {
+            //<test<hello█>the▒re>
+            var oldParent = Parent;
+            var newParent = next.Partner.Parent;
+            newParent.ClearLastCursor();
             //<test<hello█>there>
+            var hist = MakeInsertHistoryCursor();
+            oldParent.LastCursor = hist;
+            //<test<hello▒█>there>
+            Parent = next.Partner.Parent;
+            newParent.LastCursor = this;
+            E(hist, next, this, next.Next);
         }
 
         if (next.IsAtom)
         {
             //<test█foo>
             E(Prev, Next, this, next.Next);
+            //<testf█oo>
         }
         
         return this;
@@ -127,24 +158,41 @@ public class Node
         if (prev.IsRoot) return this;
         if (prev.IsOpen)
         {
+            //<de▒rp<█hello>there>
+            var oldParent = Parent;
+            var newParent = prev.Parent;
+            newParent.ClearLastCursor();
+            var hist = MakeHistoryCursor();
+            var (po,o,n) = (prev.Prev,prev,Next);
+            E(po, this, o, hist, n);
+            Parent = newParent;
+            o.LastCursor=hist;
+            newParent.LastCursor=this;
             //<derp<█hello>there>
-            Parent = prev.Parent;
-            
+
         }
 
         if (prev.IsClose)
         {
+            //<derp<hel▒lo>█there>
+            var hist = MakeHistoryCursor();
+            var oldParent = Parent;
+            var newParent = prev.Partner;
+            prev.Partner.ClearLastCursor();
             //<derp<hello>█there>
-            Parent = prev.Partner;
+            E(prev.Prev,this,prev,hist,Next);
+            oldParent.LastCursor = hist;
+            newParent.LastCursor = this;
+            Parent = newParent;
         }
 
         if (prev.IsAtom)
         {
             //<derp<hel█lo>there>
             //<derp<he█llo>there>
+            E(prev.Prev,this,prev,Next);
+            
         }
-        E(prev.Prev,this,prev,Next);
-        Parent.LastCursorPos?.Remove();
         return this;
     }
 

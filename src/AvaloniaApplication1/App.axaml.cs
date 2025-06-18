@@ -115,7 +115,7 @@ public partial class App : Application
                 $"{ctrl}+delete" => cursor.DeleteCell(),
                 _ => cursor.InsertAtom(s.Length<2 ? Convert.ToChar(s) : s)
             };
-
+            Console.WriteLine(cursor.NodeStr);
             refresh();
         };
 
