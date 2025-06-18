@@ -9,6 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Styling;
 using AvaloniaApplication1.Views;
 using CSScripting;
 using CSScriptLib;
@@ -50,7 +51,7 @@ public partial class App : Application
         txt.Focusable = true;
         
         sideList._Dock(Dock.Left);
-        sideList.AddRange("hi", "there");
+        sideList._AddRange("hi", "there");
         sideList.SelectionChanged += (s, e) =>
         {
             txt.Focus();
@@ -70,20 +71,40 @@ public partial class App : Application
         var xaml = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(
             File.ReadAllText("test.xaml"));
         var seed = 1;
-        var cursor = CreateCursor();
-        var rootNode = cursor.GetRoot();
-        var foo = "";
+        var (rootOpen, cursor, rootClosed) = CreateCursor();
+        txt.FontSize = 30;
+        
         void refresh()
         {
-            txt.Text = cursor.NodesStr();
+            //txt.Text = cursor.NodesStr();
+            txt.Inlines.Clear();
+            foreach (var node in cursor.Nodes())
+            {
+                var r = new Run(node.Data + "");
+                if (node.IsOpen && cursor.Parent==node
+                    || node.IsClose && cursor.Parent==node.Partner)
+                {
+                    r.Foreground=Brushes.Magenta;
+                }
 
+                txt.Inlines.Add(r);
+            }
+            return;
+            var run = new Run("a");
+            run.Classes.Add("foo");
+            txt.Inlines.Add(run);
+            txt.Inlines[0] = new Run("b");
+            txt.Inlines[0] = new Run("c");
+            txt.Inlines[2] = new Run("d");
+            //txt.Inlines.Clear();
+            //cursor.RenderAll(txt);
         }
         
         const string ctrl = "control";
         onCommand = s =>
         {
             if (!txt.IsFocused) return;
-            _ = s switch
+            cursor = s switch
             {
                 "left" => cursor.MoveBack(),
                 "right" => cursor.MoveForward(),
@@ -97,7 +118,18 @@ public partial class App : Application
 
             refresh();
         };
-        
+
+        void addStyleExample()
+        {
+            var style = new Style(x => x.OfType<Run>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Button.BackgroundProperty, Brushes.Green)
+                }
+            };
+            Current.Styles.Add(style);
+        }
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
             var key = args.Text;
@@ -122,8 +154,7 @@ public partial class App : Application
 
             onCommand(txt);
         }
-        refresh();
-        Control root = dockPanel;
+        Control content = dockPanel;
         
         switch (ApplicationLifetime)
         {
@@ -133,7 +164,7 @@ public partial class App : Application
                 o.FontFamily = new FontFamily("Courier New");
                 o.FontWeight = FontWeight.Bold;
                 o.FontSize = 12;
-                o.Content = root;
+                o.Content = content;
                 app.MainWindow = o;
                 o.TextInput += OnTextInput;
                 o.KeyDown += OnKeyDown;
@@ -145,7 +176,7 @@ public partial class App : Application
                 o.FontFamily = new FontFamily("Courier New");
                 o.FontWeight = FontWeight.Bold;
                 o.FontSize = 12;
-                o.Content = root;
+                o.Content = content;
                 app.MainView = o;
                 o.TextInput += OnTextInput;
                 o.KeyDown += OnKeyDown;
@@ -157,6 +188,8 @@ public partial class App : Application
         void OnTxtOnLoaded(object? s, RoutedEventArgs e)
         {
             txt.Focus(NavigationMethod.Tab);
+            refresh();
+            
         }
 
         txt.Loaded += OnTxtOnLoaded;
@@ -286,7 +319,7 @@ public partial class App : Application
             }
 
             onCommand = onCommand1;
-            root = scrollViewer;
+            content = scrollViewer;
         }
     }
 
@@ -344,7 +377,7 @@ public class Script : ICalc
 
 public static partial class Ext
 {
-    public static ListBox AddRange(this ListBox list, params string[] items)
+    public static ListBox _AddRange(this ListBox list, params string[] items)
     {
         foreach (var item in items)
         {
