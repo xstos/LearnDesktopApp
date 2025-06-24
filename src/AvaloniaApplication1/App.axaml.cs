@@ -10,6 +10,8 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.Utilities;
+using Avalonia.VisualTree;
 using AvaloniaApplication1.Views;
 using CSScripting;
 using CSScriptLib;
@@ -41,7 +43,7 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
     }
-    
+
     public override void OnFrameworkInitializationCompleted()
     {
         Action<string> onCommand = s => { };
@@ -49,17 +51,17 @@ public partial class App : Application
         var sideList = new ListBox();
         var txt = new TextBlock();
         txt.Focusable = true;
-        
+        txt.Classes.Add("TextInputParent");
         sideList._Dock(Dock.Left);
         sideList._AddRange("hi", "there");
         sideList.SelectionChanged += (s, e) =>
         {
             txt.Focus();
         };
-        
-        
+
+
         /*
-         var il = new Run("a"); 
+         var il = new Run("a");
         il.FontSize = 30;
         il.Foreground = new SolidColorBrush(Colors.Yellow);
         txt.Inlines.Add(il);
@@ -73,37 +75,58 @@ public partial class App : Application
         var seed = 1;
         var (rootOpen, cursor, rootClosed) = CreateCursor();
         txt.FontSize = 30;
-        
+        Button.PointerMovedEvent.AddClassHandler<Button>((o, args) =>
+        {
+            if (!o.Classes.Contains("letter")) return;
+            var pos = args.GetPosition(o);
+            if (pos.X > o.Bounds.Width / 2)
+            {
+                o.Classes.Add("right");
+                Console.WriteLine("right");
+                
+            }
+            else
+            {
+                o.Classes.Remove("right");
+                Console.WriteLine("left");
+            }
+            
+        });
+        Button.GotFocusEvent.AddClassHandler<Button>((o, args) =>
+        {
+            txt.Focus();
+            
+        });
         void refresh()
         {
             //txt.Text = cursor.NodesStr();
             txt.Inlines.Clear();
+
             foreach (var node in cursor.Nodes())
             {
-                var r = new Run(node.Data + "");
-                if (node.IsOpen && cursor.Parent==node
-                    || node.IsClose && cursor.Parent==node.Partner)
+                var tb = new Button();
+                tb.Classes.Add("letter");
+                //tb.IsReadOnly = true;
+                var iuc = new InlineUIContainer(tb);
+                tb.Padding = new Thickness(0);
+                tb.Margin = new Thickness(0);
+                //var r = new Run(node.Data + "");
+                //tb.Text = node.Data + "";
+                tb.Content = node.Data + "";
+                if (node.IsOpen && cursor.Parent == node
+                    || node.IsClose && cursor.Parent == node.Partner)
                 {
-                    r.Foreground=Brushes.Magenta;
+                    tb.Foreground = Brushes.Magenta;
                 }
 
-                txt.Inlines.Add(r);
+                txt.Inlines.Add(iuc);
             }
-            return;
-            var run = new Run("a");
-            run.Classes.Add("foo");
-            txt.Inlines.Add(run);
-            txt.Inlines[0] = new Run("b");
-            txt.Inlines[0] = new Run("c");
-            txt.Inlines[2] = new Run("d");
-            //txt.Inlines.Clear();
-            //cursor.RenderAll(txt);
         }
-        
+
         const string ctrl = "control";
         onCommand = s =>
         {
-            if (!txt.IsFocused) return;
+            //if (!txt.IsFocused) return;
             cursor = s switch
             {
                 "left" => cursor.MoveBack(),
@@ -113,7 +136,7 @@ public partial class App : Application
                 "delete" => cursor.DeleteAtom(),
                 $"{ctrl}+enter" => cursor.InsertAtom("\n"),
                 $"{ctrl}+delete" => cursor.DeleteCell(),
-                _ => cursor.InsertAtom(s.Length<2 ? Convert.ToChar(s) : s)
+                _ => cursor.InsertAtom(s.Length < 2 ? Convert.ToChar(s) : s)
             };
             Console.WriteLine(cursor.NodeStr);
             refresh();
@@ -130,12 +153,20 @@ public partial class App : Application
             };
             Current.Styles.Add(style);
         }
+
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
+            var topLevel = TopLevel.GetTopLevel(sender as Visual);
+            var el = topLevel.FocusManager.GetFocusedElement();
+            if (el is not Control c) return;
+            var classes = c.GetSelfAndVisualAncestors().SelectMany(c => c.Classes);
+            
+            if (!classes.Contains("TextInputParent")) return;
             var key = args.Text;
             onCommand(key);
-        }
 
+        }
+        
         void OnKeyDown(object? sender, KeyEventArgs args)
         {
             var txt = "";
@@ -154,8 +185,9 @@ public partial class App : Application
 
             onCommand(txt);
         }
+
         Control content = dockPanel;
-        
+
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime app:
@@ -166,7 +198,8 @@ public partial class App : Application
                 o.FontSize = 12;
                 o.Content = content;
                 app.MainWindow = o;
-                o.TextInput += OnTextInput;
+                o.AddHandler(InputElement.TextInputEvent,OnTextInput, RoutingStrategies.Tunnel);
+                //o.TextInput += OnTextInput;
                 o.KeyDown += OnKeyDown;
                 break;
             }
@@ -178,18 +211,17 @@ public partial class App : Application
                 o.FontSize = 12;
                 o.Content = content;
                 app.MainView = o;
-                o.TextInput += OnTextInput;
+                o.AddHandler(InputElement.TextInputEvent,OnTextInput, RoutingStrategies.Tunnel);
+                //o.TextInput += OnTextInput;
                 o.KeyDown += OnKeyDown;
                 break;
             }
-            
         }
 
         void OnTxtOnLoaded(object? s, RoutedEventArgs e)
         {
             txt.Focus(NavigationMethod.Tab);
             refresh();
-            
         }
 
         txt.Loaded += OnTxtOnLoaded;
@@ -239,6 +271,7 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
         ;
+
         void oldCode()
         {
             new WrapPanel().Var(out var pnl);
