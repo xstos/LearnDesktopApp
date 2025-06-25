@@ -75,28 +75,50 @@ public partial class App : Application
         var seed = 1;
         var (rootOpen, cursor, rootClosed) = CreateCursor();
         txt.FontSize = 30;
-        Button.PointerMovedEvent.AddClassHandler<Button>((o, args) =>
+        var letterClass = "letter";
+        var rightClass = "right";
+
+        void EventHookup()
         {
-            if (!o.Classes.Contains("letter")) return;
-            var pos = args.GetPosition(o);
-            if (pos.X > o.Bounds.Width / 2)
+            Button.PointerMovedEvent.AddClassHandler<Button>((o, args) =>
             {
-                o.Classes.Add("right");
-                Console.WriteLine("right");
+                if (!o.Classes.Contains(letterClass)) return;
+                var pos = args.GetPosition(o);
+                if (pos.X > o.Bounds.Width / 2)
+                {
+                    o.Classes.Add(rightClass);
+                    Console.WriteLine(rightClass);
                 
-            }
-            else
+                }
+                else
+                {
+                    o.Classes.Remove(rightClass);
+                    Console.WriteLine("left");
+                }
+            
+            });
+            Button.GotFocusEvent.AddClassHandler<Button>((o, args) =>
             {
-                o.Classes.Remove("right");
-                Console.WriteLine("left");
-            }
-            
-        });
-        Button.GotFocusEvent.AddClassHandler<Button>((o, args) =>
-        {
-            txt.Focus();
-            
-        });
+                if (!o.Classes.Contains(letterClass)) return;
+                txt.Focus();
+            });
+            Button.ClickEvent.AddClassHandler<Button>((o, args) =>
+            {
+                if (!o.Classes.Contains(letterClass)) return;
+                var after = o.Classes.Contains(rightClass);
+                var n = o.Tag as Node;
+                if (after)
+                {
+                    cursor.MoveBetween(n, n.Next);
+                }
+                else
+                {
+                    cursor.MoveBetween(n.Prev,n);
+                }
+                
+            });
+        }
+        EventHookup();
         void refresh()
         {
             //txt.Text = cursor.NodesStr();
@@ -104,19 +126,28 @@ public partial class App : Application
 
             foreach (var node in cursor.Nodes())
             {
-                var tb = new Button();
-                tb.Classes.Add("letter");
+                if (node.Data == "\n")
+                {
+                    txt.Inlines.Add(new LineBreak());
+                    continue;
+                }
+                
+                var el = new Button();
+                el.Tag = node;
+                el.Classes.Add(letterClass);
                 //tb.IsReadOnly = true;
-                var iuc = new InlineUIContainer(tb);
-                tb.Padding = new Thickness(0);
-                tb.Margin = new Thickness(0);
+                var iuc = new InlineUIContainer(el);
+                el.Padding = new Thickness(0);
+                el.Margin = new Thickness(0);
                 //var r = new Run(node.Data + "");
                 //tb.Text = node.Data + "";
-                tb.Content = node.Data + "";
+                
+                el.Content = node.Data + "";
+                
                 if (node.IsOpen && cursor.Parent == node
                     || node.IsClose && cursor.Parent == node.Partner)
                 {
-                    tb.Foreground = Brushes.Magenta;
+                    el.Foreground = Brushes.Magenta;
                 }
 
                 txt.Inlines.Add(iuc);

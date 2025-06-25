@@ -68,6 +68,12 @@ public class Node
         return this;
     }
 
+    public Node MoveBetween(Node a, Node b)
+    {
+        if (a==null || b==null) return this;
+        
+        return this;
+    }
     public Node InsertCell()
     {
         var (open,close) = CreateCell();
