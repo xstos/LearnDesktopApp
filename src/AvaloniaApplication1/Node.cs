@@ -23,7 +23,7 @@ public class Node
     public bool IsRoot => Parent == null;
     public bool IsOpen => Equals(Data,"<");
     public bool IsClose => Equals(Data,">");
-    public bool IsAtom => !IsOpen && !IsClose;
+    public bool IsAtom => !IsOpen && !IsClose || IsCursor || IsHistoryCursor;
     public bool IsCursor => Equals(Data,cursorSymbol);
     public bool IsHistoryCursor => Equals(Data,historyCursor);
 
@@ -68,10 +68,45 @@ public class Node
         return this;
     }
 
+    public Node ReplaceWith(Node node)
+    {
+        E(Prev,node,Next);
+        node.Parent = Parent;
+        return this;
+    }
+
+    public Node SwapWith(Node node)
+    {
+        var (p1,n1) = (Prev,Next);
+        var (p2,n2) = (node.Prev,node.Next);
+        E(p1,node,n1);
+        E(p2,this,n2);
+        return this;
+    }
     public Node MoveBetween(Node a, Node b)
     {
         if (a==null || b==null) return this;
-        
+        // (a)█< (a)█> (<)█a (>)█a (a)█a (<)█< (>)█> (<)█> (>)█<
+        Node newParent=null;
+        if(a==this||b==this) return this;
+        if (a.IsAtom) newParent = a.Parent;
+        if (a.IsOpen) newParent = a;
+        if (a.IsClose) newParent = a.Partner.Parent;
+        if (newParent == null) throw new Exception("this should never happen");
+        if (Parent != newParent)
+        {
+            var hist = MakeHistoryCursor();
+            Parent.LastCursor = hist;
+            ReplaceWith(hist);
+            newParent.LastCursor = this;
+            E(a, this, b);
+        }
+        else
+        {
+            Remove();
+            E(a, this, b);
+            
+        }
         return this;
     }
     public Node InsertCell()

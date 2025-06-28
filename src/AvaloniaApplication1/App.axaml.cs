@@ -115,7 +115,7 @@ public partial class App : Application
                 {
                     cursor.MoveBetween(n.Prev,n);
                 }
-                
+                refresh();
             });
         }
         EventHookup();
