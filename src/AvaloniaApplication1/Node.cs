@@ -93,13 +93,22 @@ public class Node
         if (a.IsOpen) newParent = a;
         if (a.IsClose) newParent = a.Partner.Parent;
         if (newParent == null) throw new Exception("this should never happen");
-        if (Parent != newParent)
+        var oldParent = Parent;
+        if (oldParent != newParent)
         {
             var hist = MakeHistoryCursor();
-            Parent.LastCursor = hist;
-            ReplaceWith(hist);
+            
+            oldParent.LastCursor = hist;
+            this.ReplaceWith(hist);
+            var newParentLastCursor = newParent.LastCursor;
+            
             newParent.LastCursor = this;
             E(a, this, b);
+            Parent = newParent;
+            if (newParentLastCursor!=null && newParentLastCursor != this)
+            {
+                newParentLastCursor.Remove();
+            }
         }
         else
         {
@@ -147,7 +156,8 @@ public class Node
     {
         var next = Next;
         if (next.IsRoot) return this;
-        
+        MoveBetween(next, next.Next);
+        return this;
         if (next.IsOpen)
         {
             //<derp█<hel▒lo>there>
@@ -197,6 +207,8 @@ public class Node
     {
         var prev = Prev;
         if (prev.IsRoot) return this;
+        MoveBetween(prev.Prev, prev);
+        return this;
         if (prev.IsOpen)
         {
             //<de▒rp<█hello>there>
