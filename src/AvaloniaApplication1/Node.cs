@@ -14,7 +14,7 @@ public class Node
     public Node? Next { get; set; }
     public Node? Parent { get; set; }
     public Node? Partner { get; set; }
-    public Node? LastCursor { get; set; }
+    public Node? Cursor { get; set; }
     
     public static implicit operator Node(char c) => new() { Data = c };
     public static implicit operator Node(string c) => new() { Data = c };
@@ -30,10 +30,7 @@ public class Node
     public Node GetRoot()
     {
         var cur = this;
-        while (cur.Parent != null)
-        {
-            cur = Parent;
-        }
+        while (cur.Parent != null) cur = Parent;
 
         return cur;
     }
@@ -43,7 +40,7 @@ public class Node
         ro.PartnerWith(rc);
         E(ro, cur, rc);
         cur.Parent = ro;
-        ro.LastCursor = cur;
+        ro.Cursor = cur;
         return (ro,cur,rc);
     }
     public static (Node,Node) CreateCell()
@@ -98,16 +95,16 @@ public class Node
         {
             var hist = MakeHistoryCursor();
             
-            oldParent.LastCursor = hist;
+            oldParent.Cursor = hist;
             this.ReplaceWith(hist);
-            var newParentLastCursor = newParent.LastCursor;
+            var newParentCursor = newParent.Cursor;
             
-            newParent.LastCursor = this;
+            newParent.Cursor = this;
             E(a, this, b);
             Parent = newParent;
-            if (newParentLastCursor!=null && newParentLastCursor != this)
+            if (newParentCursor!=null && newParentCursor != this)
             {
-                newParentLastCursor.Remove();
+                newParentCursor.Remove();
             }
         }
         else
@@ -136,20 +133,7 @@ public class Node
         return nodes;
     }
 
-    public void ClearLastCursor()
-    {
-        LastCursor?.Remove();
-        LastCursor = null;
-    }
     public static Node MakeHistoryCursor() => historyCursor;
-
-    public Node MakeInsertHistoryCursor()
-    {
-        var hist = MakeHistoryCursor();
-        InsertAtom(hist);
-        Parent.LastCursor = hist;
-        return hist;
-    }
 
     public string NodeStr => Nodes().Select(n => n.Data + "")._Join("");
     public Node MoveForward()
@@ -157,45 +141,6 @@ public class Node
         var next = Next;
         if (next.IsRoot) return this;
         MoveBetween(next, next.Next);
-        return this;
-        if (next.IsOpen)
-        {
-            //<derp█<hel▒lo>there>
-            var oldParent = Parent;
-            var newParent = next;
-            newParent.ClearLastCursor();
-            //<derp█<hello>there>
-            var hist = MakeInsertHistoryCursor();
-            oldParent.LastCursor = hist;
-            //<derp▒█<hello>there>
-            E(hist,next,this,next.Next);
-            Parent = next;
-            next.LastCursor = this;
-            //<derp▒<█hello>there>
-        }
-
-        if (next.IsClose)
-        {
-            //<test<hello█>the▒re>
-            var oldParent = Parent;
-            var newParent = next.Partner.Parent;
-            newParent.ClearLastCursor();
-            //<test<hello█>there>
-            var hist = MakeInsertHistoryCursor();
-            oldParent.LastCursor = hist;
-            //<test<hello▒█>there>
-            Parent = next.Partner.Parent;
-            newParent.LastCursor = this;
-            E(hist, next, this, next.Next);
-        }
-
-        if (next.IsAtom)
-        {
-            //<test█foo>
-            E(Prev, Next, this, next.Next);
-            //<testf█oo>
-        }
-        
         return this;
     }
 
@@ -208,44 +153,6 @@ public class Node
         var prev = Prev;
         if (prev.IsRoot) return this;
         MoveBetween(prev.Prev, prev);
-        return this;
-        if (prev.IsOpen)
-        {
-            //<de▒rp<█hello>there>
-            var oldParent = Parent;
-            var newParent = prev.Parent;
-            newParent.ClearLastCursor();
-            var hist = MakeHistoryCursor();
-            var (po,o,n) = (prev.Prev,prev,Next);
-            E(po, this, o, hist, n);
-            Parent = newParent;
-            o.LastCursor=hist;
-            newParent.LastCursor=this;
-            //<derp<█hello>there>
-
-        }
-
-        if (prev.IsClose)
-        {
-            //<derp<hel▒lo>█there>
-            var hist = MakeHistoryCursor();
-            var oldParent = Parent;
-            var newParent = prev.Partner;
-            prev.Partner.ClearLastCursor();
-            //<derp<hello>█there>
-            E(prev.Prev,this,prev,hist,Next);
-            oldParent.LastCursor = hist;
-            newParent.LastCursor = this;
-            Parent = newParent;
-        }
-
-        if (prev.IsAtom)
-        {
-            //<derp<hel█lo>there>
-            //<derp<he█llo>there>
-            E(prev.Prev,this,prev,Next);
-            
-        }
         return this;
     }
 
@@ -281,6 +188,17 @@ public class Node
 
         return this;
     }
+
+    public Node BackspaceCell()
+    {
+        var prev = Prev;
+        if (prev.IsClose)
+        {
+            E(prev.Partner.Prev, this);
+        }
+
+        return this;
+    }
     public static void Edge(Node a, Node b)
     {
         if (a!=null) a.Next = b;
@@ -310,26 +228,6 @@ public class Node
         return Before().Reverse().Concat([this,..After()]);
     }
 
-    public void RenderAll(TextBlock ret)
-    {
-        var sb = new StringBuilder();
-        var stack = new Stack<TextBlock>() ;
-        stack.Push(ret);
-        ForEachNode(node =>
-        {
-            var parent = stack.Peek();
-            if (node.IsAtom)
-            {
-                parent.Inlines.Add(new Run(node.Data.ToString()));
-            }
-            else
-            {
-                parent.Inlines.Add(new Run(node.Data.ToString()));
-            }
-            
-        });
-    }
-
     public void ForEachNode(Action<Node> action)
     {
         var root = GetRoot();
@@ -350,4 +248,5 @@ public class Node
     {
         Console.WriteLine("destroy "+Data);
     }
+    
 }

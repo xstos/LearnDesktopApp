@@ -154,7 +154,7 @@ public partial class App : Application
             }
         }
 
-        const string ctrl = "control";
+        const string shift = "shift";
         onCommand = s =>
         {
             //if (!txt.IsFocused) return;
@@ -165,10 +165,12 @@ public partial class App : Application
                 "enter" => cursor.InsertCell(),
                 "back" => cursor.Backspace(),
                 "delete" => cursor.DeleteAtom(),
-                $"{ctrl}+enter" => cursor.InsertAtom("\n"),
-                $"{ctrl}+delete" => cursor.DeleteCell(),
+                $"{shift}+enter" => cursor.InsertAtom("\n"),
+                $"{shift}+delete" => cursor.DeleteCell(),
+                $"{shift}+back" => cursor.BackspaceCell(),
                 _ => cursor.InsertAtom(s.Length < 2 ? Convert.ToChar(s) : s)
             };
+            Console.WriteLine(s);
             Console.WriteLine(cursor.NodeStr);
             refresh();
         };
