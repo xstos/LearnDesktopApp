@@ -1,10 +1,24 @@
+global using static Globals;
 using System.Dynamic;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Platform;
 using ImpromptuInterface;
-
+public static class Globals
+{
+    public static Stream __Assets(string name) => AssetLoader.Open(new Uri($"avares://AvaloniaApplication1/Assets/{name}"));
+}
 
 public static partial class Ext
 {
+    public static AppBuilder WithMyConfig(this AppBuilder builder)
+    {
+        return builder;
+        return builder.With(new SkiaOptions()
+        {
+            MaxGpuResourceSizeBytes = 1073741824*2L
+        });
+    }
     public static T Var<T>(this T v, out T v2)
     {
         return v2 = v;
@@ -69,10 +83,7 @@ public class UI
         Vars = new();
     }
 
-    public static void r(string s)
-    {
-        
-    }
+    
     public static UI Render(Action a)
     {
         var root = new UI();

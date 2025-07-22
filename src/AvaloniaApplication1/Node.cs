@@ -83,7 +83,7 @@ public class Node
     public Node MoveBetween(Node a, Node b)
     {
         if (a==null || b==null) return this;
-        // (a)█< (a)█> (<)█a (>)█a (a)█a (<)█< (>)█> (<)█> (>)█<
+        // a█< a█> <█a >█a a█a <█< >█> <█> >█<
         Node newParent=null;
         if(a==this||b==this) return this;
         if (a.IsAtom) newParent = a.Parent;

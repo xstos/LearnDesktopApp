@@ -12,22 +12,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AutoBogus.Conventions" Version="2.13.1" />
-		<PackageReference Include="Avalonia" Version="11.3.0" />
-		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="11.3.0" />
-		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
-		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.0" />
-		<PackageReference Include="Bogus" Version="35.6.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.0" />
-		<PackageReference Include="CS-Script" Version="4.9.6" />
-		<PackageReference Include="DialogHost.Avalonia" Version="0.8.1" />
+		<PackageReference Include="Avalonia" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Skia" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.2" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.2" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CS-Script" Version="4.9.7" />
+		<PackageReference Include="DialogHost.Avalonia" Version="0.9.3" />
 		<PackageReference Include="ImpromptuInterface" Version="8.0.6" />
-		<PackageReference Include="Jint" Version="4.2.2" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="Jint" Version="4.4.0" />
 
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.2" />
 		<PackageReference Include="OneOf" Version="3.0.271" />
 		<PackageReference Include="ValueOf" Version="2.0.31" />
 		<!--<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />-->
@@ -41,13 +38,4 @@
 	  <UpToDateCheckInput Remove="Views\Cards\CardView.axaml" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Assets\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="Test.xaml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
 </Project>

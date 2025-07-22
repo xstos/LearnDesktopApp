@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Documents;
@@ -12,6 +13,7 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using AvaloniaApplication1;
 using AvaloniaApplication1.Views;
 using CSScripting;
 using CSScriptLib;
@@ -19,7 +21,7 @@ using Jint;
 using Jint.Native;
 using Jint.Native.Json;
 using Jint.Runtime;
-using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.DependencyInjection;
 using static UI;
 using static Ext;
 using static Node;
@@ -29,15 +31,15 @@ using OneOf.Types;
 
 public partial class App : Application
 {
-    public static readonly IServiceProvider? ServiceProvider = BuildDependencyGraph()
-        .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
+    // public static readonly IServiceProvider? ServiceProvider = BuildDependencyGraph()
+    //     .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
 
-    public static ServiceCollection BuildDependencyGraph()
-    {
-        ServiceCollection services = new();
-        services.AddLogging();
-        return services;
-    }
+    // public static ServiceCollection BuildDependencyGraph()
+    // {
+    //     ServiceCollection services = new();
+    //     services.AddLogging();
+    //     return services;
+    // }
 
     public override void Initialize()
     {
@@ -48,6 +50,9 @@ public partial class App : Application
     {
         Action<string> onCommand = s => { };
         var dockPanel = new DockPanel();
+        var sv = new ScrollViewer();
+        var log = new TextBox();
+        log._Dock(Dock.Bottom);
         var sideList = new ListBox();
         var txt = new TextBlock();
         txt.Focusable = true;
@@ -59,10 +64,15 @@ public partial class App : Application
             txt.Focus();
         };
         
-        txt.ClipToBounds = false;
+        txt.ClipToBounds = true;
         txt.TextWrapping = TextWrapping.Wrap;
         dockPanel.Children.Add(sideList);
-        dockPanel.Children.Add(txt);
+        dockPanel.Children.Add(new MyCanvas());
+        sv.Content = txt;
+        sv.IsTabStop = true;
+        sv.AllowAutoHide = false;
+        //dockPanel.Children.Add(sv);
+        //dockPanel.Children.Add(log);
         
         var seed = 1;
         var (rootOpen, cursor, rootClosed) = CreateCursor();
@@ -110,42 +120,72 @@ public partial class App : Application
                 refresh();
             });
         }
+
+        LineBreak BR()
+        {
+            return new LineBreak();
+        }
         EventHookup();
-        void refresh()
+        void refresh2()
         {
             //txt.Text = cursor.NodesStr();
             txt.Inlines.Clear();
-
+            
             foreach (var node in cursor.Nodes())
             {
-                if (node.Data == "\n")
+                var nodeData = node.Data;
+                var content = nodeData + "";
+                var isNewLine = nodeData == "\n";
+                if (isNewLine)
                 {
-                    txt.Inlines.Add(new LineBreak());
-                    continue;
+                    content = "⏎";
                 }
                 
                 var el = new Button();
                 el.Tag = node;
                 el.Classes.Add(letterClass);
-                //tb.IsReadOnly = true;
-                var iuc = new InlineUIContainer(el);
-                el.Padding = new Thickness(0);
-                el.Margin = new Thickness(0);
-                //var r = new Run(node.Data + "");
-                //tb.Text = node.Data + "";
-                
-                el.Content = node.Data + "";
+                //el.Padding = new Thickness(0);
+                //el.Margin = new Thickness(0);
+                el.Content = content;
                 
                 if (node.IsOpen && cursor.Parent == node
                     || node.IsClose && cursor.Parent == node.Partner)
                 {
                     el.Foreground = Brushes.Magenta;
                 }
-
+                var iuc = new InlineUIContainer(el);
+                
                 txt.Inlines.Add(iuc);
+                if (isNewLine)
+                {
+                    txt.Inlines.Add(BR());
+                    
+                }
             }
+            
         }
 
+        void refresh()
+        {
+            var tb2 = txtblock(get());
+            dockPanel.Children[1] = tb2;
+        }
+
+        string get()
+        {
+            var l = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ipsum magna, rutrum quis nunc at, faucibus rutrum nunc. Nam vitae blandit massa, at venenatis nibh. Etiam ultricies enim diam, a placerat felis consequat sit amet. Maecenas nec diam id mauris varius scelerisque. Cras eget velit nec odio lobortis aliquam vitae quis sem. Fusce feugiat ante lorem, nec varius nibh imperdiet et. Nulla ultricies varius fringilla. Quisque sed massa non nibh tincidunt pulvinar. Mauris fermentum purus sed tristique dignissim. Aliquam in eleifend mi, a interdum sapien.\n\nQuisque eget risus in dolor rutrum tincidunt sed at nulla. Donec sodales libero ac nunc luctus, eget sollicitudin leo imperdiet. Sed pulvinar iaculis imperdiet. Aliquam pharetra, ligula nec posuere fermentum, turpis nunc mattis sem, malesuada cursus nunc orci id mauris. Integer eu posuere ante. Nullam ac ornare erat, ac malesuada sem. Duis eu nisl augue.\n\nFusce dictum condimentum libero eget pulvinar. Donec sed metus pharetra, aliquam felis vitae, posuere elit. Nam sed nulla malesuada, lobortis risus et, bibendum augue. Nulla vel sollicitudin libero, vitae dapibus ante. Vestibulum et gravida lorem. Sed varius lobortis mi, sed consectetur est cursus in. Donec feugiat interdum fermentum. Proin sit amet urna ac est lacinia pretium. Donec interdum felis a nibh aliquam, vel sollicitudin ex pellentesque. Aliquam erat volutpat. Sed cursus urna sed ipsum maximus, eget pharetra dui rutrum. Nulla vitae tellus ut velit euismod tempus quis id nisi. Maecenas et dolor odio. Vestibulum eget lectus mauris.\n\nInteger venenatis eu nisl lacinia tincidunt. Vestibulum blandit vestibulum dolor non malesuada. Sed erat sem, facilisis quis dolor quis, sodales pulvinar lacus. Sed vestibulum metus at tellus mollis volutpat. Donec bibendum felis quis gravida cursus. Vivamus auctor accumsan felis ut efficitur. Nam scelerisque nulla a velit interdum vestibulum. Proin mollis tempus nunc nec lobortis.\n\nCurabitur venenatis elit ut leo pellentesque efficitur. Nullam sagittis est sit amet urna finibus iaculis. Vivamus magna diam, tempor eget lacinia non, dictum nec mauris. Integer congue ut tellus vitae tempor. Aliquam rutrum augue tristique elit elementum tincidunt. Nunc mi risus, fermentum sed volutpat vitae, fermentum sit amet nibh. Nunc consectetur molestie libero at lacinia.";
+            return l.ToCharArray().Select(c => $@"<Button>{c}</Button>")._Join("");
+        }
+
+        WrapPanel txtblock(string child)
+        {
+            var b = $@"
+<WrapPanel xmlns='https://github.com/avaloniaui'>
+    {child}
+</WrapPanel>
+";
+            return AvaloniaRuntimeXamlLoader.Parse<WrapPanel>(b);
+        }
         const string shift = "shift";
         onCommand = s =>
         {
@@ -162,8 +202,8 @@ public partial class App : Application
                 $"{shift}+back" => cursor.BackspaceCell(),
                 _ => cursor.InsertAtom(s.Length < 2 ? Convert.ToChar(s) : s)
             };
-            Console.WriteLine(s);
-            Console.WriteLine(cursor.NodeStr);
+            //Console.WriteLine(s);
+            //Console.WriteLine(cursor.NodeStr);
             refresh();
         };
 
@@ -251,10 +291,9 @@ public partial class App : Application
 
         txt.Loaded += OnTxtOnLoaded;
 
-        void xamlLoadExample()
+        void xamlLoadExample(string txt)
         {
-            var xaml = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(
-                File.ReadAllText("test.xaml"));
+            var xaml = AvaloniaRuntimeXamlLoader.Parse<TextBlock>(txt);
         }
         void jsInit()
         {
@@ -356,4 +395,5 @@ public static partial class Ext
 
         return list;
     }
+    
 }
