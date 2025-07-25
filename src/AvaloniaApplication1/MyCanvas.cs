@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 
@@ -32,6 +33,14 @@ public class MyCanvas : Control
             cd.HitTestFun = (cdo, p) => true;
             context.Custom(cd);
         };
+    }
+    public static Size CalculateTextSize(string myText, FontFamily myFont, int myFontSize)
+    {
+        var ts = TextShaper.Current;
+        var typeface = new Typeface(myFont);
+        ShapedBuffer shaped = ts.ShapeText(myText, new TextShaperOptions(typeface.GlyphTypeface, myFontSize));
+        var run = new ShapedTextRun(shaped, new GenericTextRunProperties(typeface, myFontSize));
+        return run.Size;
     }
     public override void Render(DrawingContext context)
     {

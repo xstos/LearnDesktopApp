@@ -50,14 +50,12 @@ public partial class App : Application
     {
         Action<string> onCommand = s => { };
         var dockPanel = new DockPanel();
-        var sv = new ScrollViewer();
-        var log = new TextBox();
-        log._Dock(Dock.Bottom);
-        var sideList = new ListBox();
+        var sv = new ScrollViewer()._Dock(Dock.Right);
+        var bottom = new MyCanvas();
+        var sideList = new ListBox()._Dock(Dock.Left);
         var txt = new TextBlock();
         txt.Focusable = true;
         txt.Classes.Add("TextInputParent");
-        sideList._Dock(Dock.Left);
         sideList._AddRange("hi", "there");
         sideList.SelectionChanged += (s, e) =>
         {
@@ -67,11 +65,11 @@ public partial class App : Application
         txt.ClipToBounds = true;
         txt.TextWrapping = TextWrapping.Wrap;
         dockPanel.Children.Add(sideList);
-        dockPanel.Children.Add(new MyCanvas());
+        dockPanel.Children.Add(bottom);
         sv.Content = txt;
         sv.IsTabStop = true;
         sv.AllowAutoHide = false;
-        //dockPanel.Children.Add(sv);
+        dockPanel.Children.Add(sv);
         //dockPanel.Children.Add(log);
         
         var seed = 1;
@@ -79,54 +77,52 @@ public partial class App : Application
         txt.FontSize = 30;
         var letterClass = "letter";
         var rightClass = "right";
+        void ButtonPointerMovedHandler(Button o, PointerEventArgs args)
+        {
+            if (!o.Classes.Contains(letterClass)) return;
+            var pos = args.GetPosition(o);
+            if (pos.X > o.Bounds.Width / 2)
+            {
+                o.Classes.Add(rightClass);
+                Console.WriteLine(rightClass);
+            }
+            else
+            {
+                o.Classes.Remove(rightClass);
+                Console.WriteLine("left");
+            }
+        }
+        void ButtonFocusHandler(Button o, GotFocusEventArgs args)
+        {
+            if (!o.Classes.Contains(letterClass)) return;
+            txt.Focus();
+        }
+        void ButtonClickHandler(Button o, RoutedEventArgs args)
+        {
+            if (!o.Classes.Contains(letterClass)) return;
+            var after = o.Classes.Contains(rightClass);
+            var n = o.Tag as Node;
+            if (after)
+            {
+                cursor.MoveBetween(n, n.Next);
+            }
+            else
+            {
+                cursor.MoveBetween(n.Prev, n);
+            }
 
+            refresh();
+        }
         void EventHookup()
         {
-            Button.PointerMovedEvent.AddClassHandler<Button>((o, args) =>
-            {
-                if (!o.Classes.Contains(letterClass)) return;
-                var pos = args.GetPosition(o);
-                if (pos.X > o.Bounds.Width / 2)
-                {
-                    o.Classes.Add(rightClass);
-                    Console.WriteLine(rightClass);
-                
-                }
-                else
-                {
-                    o.Classes.Remove(rightClass);
-                    Console.WriteLine("left");
-                }
-            
-            });
-            Button.GotFocusEvent.AddClassHandler<Button>((o, args) =>
-            {
-                if (!o.Classes.Contains(letterClass)) return;
-                txt.Focus();
-            });
-            Button.ClickEvent.AddClassHandler<Button>((o, args) =>
-            {
-                if (!o.Classes.Contains(letterClass)) return;
-                var after = o.Classes.Contains(rightClass);
-                var n = o.Tag as Node;
-                if (after)
-                {
-                    cursor.MoveBetween(n, n.Next);
-                }
-                else
-                {
-                    cursor.MoveBetween(n.Prev,n);
-                }
-                refresh();
-            });
+            Button.PointerMovedEvent.AddClassHandler<Button>(ButtonPointerMovedHandler);
+            Button.GotFocusEvent.AddClassHandler<Button>(ButtonFocusHandler);
+            Button.ClickEvent.AddClassHandler<Button>(ButtonClickHandler);
         }
 
-        LineBreak BR()
-        {
-            return new LineBreak();
-        }
+        LineBreak BR() => new();
         EventHookup();
-        void refresh2()
+        void refresh()
         {
             //txt.Text = cursor.NodesStr();
             txt.Inlines.Clear();
@@ -159,33 +155,10 @@ public partial class App : Application
                 if (isNewLine)
                 {
                     txt.Inlines.Add(BR());
-                    
                 }
             }
-            
         }
-
-        void refresh()
-        {
-            var tb2 = txtblock(get());
-            dockPanel.Children[1] = tb2;
-        }
-
-        string get()
-        {
-            var l = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ipsum magna, rutrum quis nunc at, faucibus rutrum nunc. Nam vitae blandit massa, at venenatis nibh. Etiam ultricies enim diam, a placerat felis consequat sit amet. Maecenas nec diam id mauris varius scelerisque. Cras eget velit nec odio lobortis aliquam vitae quis sem. Fusce feugiat ante lorem, nec varius nibh imperdiet et. Nulla ultricies varius fringilla. Quisque sed massa non nibh tincidunt pulvinar. Mauris fermentum purus sed tristique dignissim. Aliquam in eleifend mi, a interdum sapien.\n\nQuisque eget risus in dolor rutrum tincidunt sed at nulla. Donec sodales libero ac nunc luctus, eget sollicitudin leo imperdiet. Sed pulvinar iaculis imperdiet. Aliquam pharetra, ligula nec posuere fermentum, turpis nunc mattis sem, malesuada cursus nunc orci id mauris. Integer eu posuere ante. Nullam ac ornare erat, ac malesuada sem. Duis eu nisl augue.\n\nFusce dictum condimentum libero eget pulvinar. Donec sed metus pharetra, aliquam felis vitae, posuere elit. Nam sed nulla malesuada, lobortis risus et, bibendum augue. Nulla vel sollicitudin libero, vitae dapibus ante. Vestibulum et gravida lorem. Sed varius lobortis mi, sed consectetur est cursus in. Donec feugiat interdum fermentum. Proin sit amet urna ac est lacinia pretium. Donec interdum felis a nibh aliquam, vel sollicitudin ex pellentesque. Aliquam erat volutpat. Sed cursus urna sed ipsum maximus, eget pharetra dui rutrum. Nulla vitae tellus ut velit euismod tempus quis id nisi. Maecenas et dolor odio. Vestibulum eget lectus mauris.\n\nInteger venenatis eu nisl lacinia tincidunt. Vestibulum blandit vestibulum dolor non malesuada. Sed erat sem, facilisis quis dolor quis, sodales pulvinar lacus. Sed vestibulum metus at tellus mollis volutpat. Donec bibendum felis quis gravida cursus. Vivamus auctor accumsan felis ut efficitur. Nam scelerisque nulla a velit interdum vestibulum. Proin mollis tempus nunc nec lobortis.\n\nCurabitur venenatis elit ut leo pellentesque efficitur. Nullam sagittis est sit amet urna finibus iaculis. Vivamus magna diam, tempor eget lacinia non, dictum nec mauris. Integer congue ut tellus vitae tempor. Aliquam rutrum augue tristique elit elementum tincidunt. Nunc mi risus, fermentum sed volutpat vitae, fermentum sit amet nibh. Nunc consectetur molestie libero at lacinia.";
-            return l.ToCharArray().Select(c => $@"<Button>{c}</Button>")._Join("");
-        }
-
-        WrapPanel txtblock(string child)
-        {
-            var b = $@"
-<WrapPanel xmlns='https://github.com/avaloniaui'>
-    {child}
-</WrapPanel>
-";
-            return AvaloniaRuntimeXamlLoader.Parse<WrapPanel>(b);
-        }
+        
         const string shift = "shift";
         onCommand = s =>
         {
@@ -253,32 +226,31 @@ public partial class App : Application
 
         Control content = dockPanel;
 
+        void Init(dynamic w)
+        {
+            w.FontFamily = new FontFamily("Courier New");
+            w.FontWeight = FontWeight.Bold;
+            w.FontSize = 12;
+            w.Content = content;
+        }
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime app:
             {
-                new MainWindow().Var(out var o);
-                o.FontFamily = new FontFamily("Courier New");
-                o.FontWeight = FontWeight.Bold;
-                o.FontSize = 12;
-                o.Content = content;
-                app.MainWindow = o;
-                o.AddHandler(InputElement.TextInputEvent,OnTextInput, RoutingStrategies.Tunnel);
-                //o.TextInput += OnTextInput;
-                o.KeyDown += OnKeyDown;
+                new MainWindow().Var(out var w);
+                w.AddHandler(InputElement.TextInputEvent,OnTextInput, RoutingStrategies.Tunnel);
+                w.KeyDown += OnKeyDown;
+                Init(w);
+                app.MainWindow = w;
                 break;
             }
             case ISingleViewApplicationLifetime app:
             {
-                new MainView().Var(out var o);
-                o.FontFamily = new FontFamily("Courier New");
-                o.FontWeight = FontWeight.Bold;
-                o.FontSize = 12;
-                o.Content = content;
-                app.MainView = o;
-                o.AddHandler(InputElement.TextInputEvent,OnTextInput, RoutingStrategies.Tunnel);
-                //o.TextInput += OnTextInput;
-                o.KeyDown += OnKeyDown;
+                new MainView().Var(out var w);
+                w.AddHandler(InputElement.TextInputEvent,OnTextInput, RoutingStrategies.Tunnel);
+                w.KeyDown += OnKeyDown;
+                Init(w);
+                app.MainView = w;
                 break;
             }
         }
