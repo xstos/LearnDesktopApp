@@ -66,6 +66,7 @@ public partial class App : Application
         txt.TextWrapping = TextWrapping.Wrap;
         dockPanel.Children.Add(sideList);
         dockPanel.Children.Add(bottom);
+        //dockPanel.Children.Add(new BlockEditor());
         sv.Content = txt;
         sv.IsTabStop = true;
         sv.AllowAutoHide = false;
