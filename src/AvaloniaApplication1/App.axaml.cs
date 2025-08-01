@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -10,6 +11,8 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -22,6 +25,8 @@ using Jint.Native;
 using Jint.Native.Json;
 using Jint.Runtime;
 //using Microsoft.Extensions.DependencyInjection;
+using static Avalonia.Media.Brushes;
+
 using static UI;
 using static Ext;
 using static Node;
@@ -51,7 +56,44 @@ public partial class App : Application
         Action<string> onCommand = s => { };
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
-        var bottom = new MyCanvas();
+
+        void Ctor(MyCanvas _)
+        {
+            var stream = __Assets("hi.png");
+            var wb = WriteableBitmap.Decode(stream);
+            var textSize = AvaloniaApplication1.Ext.MeasureText("a", new FontFamily("Courier"), 12);
+            void Draw(string[] lines)
+            {
+            }
+            FormattedText MakeFormattedText(string txt, IBrush? foreground, double emSize=12)
+            {
+                return new FormattedText(txt, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Courier"), emSize, foreground);
+            }
+            Draw(Lorem.Text.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
+
+            bool Equals(CDO cdo, ICustomDrawOperation? operation) => false;
+            bool HitTest(CDO cdo, Point point) => false;
+            Rect GetBounds(CDO cdo) => _.Bounds;
+
+            var CDO = _.CDO;
+            CDO.getBounds = GetBounds;
+            CDO.equals = Equals;
+            CDO.hitTest = HitTest;
+            CDO.render = (cdo, idctx) =>
+            {
+                idctx.DrawBitmap(wb, new Rect(200, 200, 64, 64));
+            };
+            _.RenderFun = (canvas, context) =>
+            {
+                var txt = _.Bounds.ToString();
+                var formattedText = MakeFormattedText(txt, White);
+                context.DrawText(formattedText, new Point(100, 100));
+                context.Custom(CDO);
+            };
+
+        }
+
+        var bottom = new MyCanvas(Ctor);
         var sideList = new ListBox()._Dock(Dock.Left);
         var txt = new TextBlock();
         txt.Focusable = true;
@@ -70,7 +112,7 @@ public partial class App : Application
         sv.Content = txt;
         sv.IsTabStop = true;
         sv.AllowAutoHide = false;
-        dockPanel.Children.Add(sv);
+        //dockPanel.Children.Add(sv);
         //dockPanel.Children.Add(log);
         
         var seed = 1;

@@ -6,7 +6,7 @@ namespace AvaloniaApplication1;
 
 public static partial class Ext
 {
-    public static Size CalculateTextSize(string myText, FontFamily myFont, int myFontSize)
+    public static Size MeasureText(string myText, FontFamily myFont, int myFontSize)
     {
         var ts = TextShaper.Current;
         var typeface = new Typeface(myFont);
