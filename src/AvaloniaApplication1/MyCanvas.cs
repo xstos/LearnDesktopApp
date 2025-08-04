@@ -10,7 +10,7 @@ namespace AvaloniaApplication1;
 
 public class MyCanvas : Control
 {
-    public Action<MyCanvas, DrawingContext> RenderFun;
+    public Action<MyCanvas, DrawingContext> render;
     public CDO CDO=new();
     public MyCanvas(Action<MyCanvas> ctor)
     {
@@ -20,7 +20,7 @@ public class MyCanvas : Control
    
     public override void Render(DrawingContext context)
     {
-        RenderFun.Invoke(this,context);
+        render.Invoke(this,context);
     }
 }
 

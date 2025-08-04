@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Media.TextFormatting;
 
-namespace AvaloniaApplication1;
 
 public static partial class Ext
 {
@@ -13,5 +13,18 @@ public static partial class Ext
         ShapedBuffer shaped = ts.ShapeText(myText, new TextShaperOptions(typeface.GlyphTypeface, myFontSize));
         var run = new ShapedTextRun(shaped, new GenericTextRunProperties(typeface, myFontSize));
         return run.Size;
+    }
+    public static Bitmap CreateTextTile(int width,int height, Action<Bitmap,DrawingContext> render)
+    {
+        // Create bitmap
+        
+        var bitmap = new RenderTargetBitmap(
+            new PixelSize(width, height),
+            new Vector(96, 96));
+
+        using var ctx = bitmap.CreateDrawingContext();
+        render(bitmap,ctx);
+    
+        return bitmap;
     }
 }

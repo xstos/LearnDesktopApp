@@ -11,6 +11,11 @@ public static class Globals
 
 public static partial class Ext
 {
+    public static int Floor(this double d) => Math.Floor(d).ToInt();
+    public static int Ceil(this double d) => Math.Ceiling(d).ToInt();
+
+    public static int ToInt(this double d) => (int)d;
+
     public static AppBuilder WithMyConfig(this AppBuilder builder)
     {
         return builder;

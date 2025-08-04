@@ -8,7 +8,7 @@ using OneOf.Types;
 public class Node
 {
     public const string cursorSymbol = "█";
-    private const string historyCursor = "▒";
+    public const string historyCursor = "▒";
     public object Data;
     public Node? Prev { get; set; }
     public Node? Next { get; set; }

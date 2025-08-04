@@ -57,45 +57,99 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
-        void Ctor(MyCanvas _)
+        const int myFontSize = 12;
+
+        var courierNew = "Courier New";
+        
+        void Ctor(MyCanvas c)
         {
             var stream = __Assets("hi.png");
             var wb = WriteableBitmap.Decode(stream);
-            var textSize = AvaloniaApplication1.Ext.MeasureText("a", new FontFamily("Courier"), 12);
+            var textSize = MeasureText(cursorSymbol, new FontFamily(courierNew), myFontSize);
             void Draw(string[] lines)
             {
             }
-            FormattedText MakeFormattedText(string txt, IBrush? foreground, double emSize=12)
+            FormattedText MakeFormattedText(string txt, IBrush? foreground, double emSize=myFontSize)
             {
-                return new FormattedText(txt, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Courier"), emSize, foreground);
+                return new FormattedText(txt, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Courier New"), emSize, foreground);
             }
             Draw(Lorem.Text.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
 
             bool Equals(CDO cdo, ICustomDrawOperation? operation) => false;
             bool HitTest(CDO cdo, Point point) => false;
-            Rect GetBounds(CDO cdo) => _.Bounds;
+            Rect GetBounds(CDO cdo) => c.Bounds;
 
-            var CDO = _.CDO;
+            var CDO = c.CDO;
             CDO.getBounds = GetBounds;
             CDO.equals = Equals;
             CDO.hitTest = HitTest;
             CDO.render = (cdo, idctx) =>
             {
+                var myc = cdo.Parent;
+                var bounds = myc.Bounds;
                 idctx.DrawBitmap(wb, new Rect(200, 200, 64, 64));
             };
-            _.RenderFun = (canvas, context) =>
+            var ft = MakeFormattedText(cursorSymbol,White);
+            var ft2 = MakeFormattedText(historyCursor, White);
+            var cursorTile = CreateTextTile(textSize.Width.ToInt(), textSize.Height.ToInt(),(bitmap, context) =>
             {
-                var txt = _.Bounds.ToString();
-                var formattedText = MakeFormattedText(txt, White);
-                context.DrawText(formattedText, new Point(100, 100));
+                context.DrawText(ft,new Point(0,0));
+            });
+            var cursorTile2 = CreateTextTile(textSize.Width.ToInt(), textSize.Height.ToInt(),(bitmap, context) =>
+            {
+                context.DrawText(ft2,new Point(0,0));
+            });
+            c.render = (canvas, context) =>
+            {
+                var cBounds = c.Bounds;
+                var txtW = textSize.Width.Ceil();
+                var txtH = textSize.Height.Ceil();
+                var bndW = cBounds.Width;
+                var bndH = cBounds.Height;
+                var (numRows,numCols) = (bndH.ToInt() / txtH, bndW.ToInt() / txtW);
+                
+                var txt = $" w={bndW} h={bndH} tw={txtW} th={txtH} nr={numRows} nc={numCols}";
+                var formattedText = MakeFormattedText(txt, Magenta,12);
+                var drawText = context.DrawText;
+                
+                drawText(formattedText, new Point(10, 10));
+
+                var n = 0;
+                for (int x = 0; x < numCols; x++)
+                {
+                    var xoffs = x * txtW;
+                    for (int y = 0; y < numRows; y++)
+                    {
+                        Point p = new(xoffs, y * txtH);
+                        //if (n%2==0) drawText(ft, p);
+                        //else drawText(ft2, p);
+                        if (n%2==0) context.DrawImage(cursorTile,new Rect(p,cursorTile.Size));
+                        else context.DrawImage(cursorTile2,new Rect(p,cursorTile.Size));
+                        n += 1;
+                    }
+
+                    
+                }
                 context.Custom(CDO);
             };
 
         }
 
         var bottom = new MyCanvas(Ctor);
+        
         var sideList = new ListBox()._Dock(Dock.Left);
         var txt = new TextBlock();
+
+        Control getCanvas()
+        {
+            var border = new Border()
+            {
+                BorderThickness = new Thickness(2),
+                BorderBrush = Red,
+                Child = bottom
+            };
+            return border;
+        }
         txt.Focusable = true;
         txt.Classes.Add("TextInputParent");
         sideList._AddRange("hi", "there");
@@ -106,8 +160,9 @@ public partial class App : Application
         
         txt.ClipToBounds = true;
         txt.TextWrapping = TextWrapping.Wrap;
-        dockPanel.Children.Add(sideList);
-        dockPanel.Children.Add(bottom);
+        
+        //dockPanel.Children.Add(sideList);
+        dockPanel.Children.Add(getCanvas());
         //dockPanel.Children.Add(new BlockEditor());
         sv.Content = txt;
         sv.IsTabStop = true;
@@ -271,9 +326,9 @@ public partial class App : Application
 
         void Init(dynamic w)
         {
-            w.FontFamily = new FontFamily("Courier New");
+            w.FontFamily = new FontFamily(courierNew);
             w.FontWeight = FontWeight.Bold;
-            w.FontSize = 12;
+            w.FontSize = myFontSize;
             w.Content = content;
         }
         switch (ApplicationLifetime)
