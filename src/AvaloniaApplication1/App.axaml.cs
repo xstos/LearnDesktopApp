@@ -27,7 +27,6 @@ using Jint.Runtime;
 //using Microsoft.Extensions.DependencyInjection;
 using static Avalonia.Media.Brushes;
 
-using static UI;
 using static Ext;
 using static Node;
 using ValueOf;
@@ -57,7 +56,7 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
-        const int myFontSize = 12;
+        const int myFontSize = 24;
 
         var courierNew = "Courier New";
         
@@ -78,7 +77,11 @@ public partial class App : Application
             bool Equals(CDO cdo, ICustomDrawOperation? operation) => false;
             bool HitTest(CDO cdo, Point point) => false;
             Rect GetBounds(CDO cdo) => c.Bounds;
-
+            var renderOpts = new RenderOptions()
+            {
+                TextRenderingMode = TextRenderingMode.Alias,
+                BitmapInterpolationMode = BitmapInterpolationMode.LowQuality
+            };
             var CDO = c.CDO;
             CDO.getBounds = GetBounds;
             CDO.equals = Equals;
@@ -91,17 +94,34 @@ public partial class App : Application
             };
             var ft = MakeFormattedText(cursorSymbol,White);
             var ft2 = MakeFormattedText(historyCursor, White);
-            var cursorTile = CreateTextTile(textSize.Width.ToInt(), textSize.Height.ToInt(),(bitmap, context) =>
+            var cursorTile = CreateTextTile(textSize.Width.Ceil(), textSize.Height.Ceil(),(bitmap, context) =>
             {
+                context.PushRenderOptions(renderOpts);
                 context.DrawText(ft,new Point(0,0));
             });
-            var cursorTile2 = CreateTextTile(textSize.Width.ToInt(), textSize.Height.ToInt(),(bitmap, context) =>
+            var cursorTile2 = CreateTextTile(textSize.Width.Ceil(), textSize.Height.Ceil(),(bitmap, context) =>
             {
+                context.PushRenderOptions(renderOpts);
                 context.DrawText(ft2,new Point(0,0));
             });
+            
             c.render = (canvas, context) =>
             {
-                var cBounds = c.Bounds;
+                var cBounds = canvas.Bounds;
+                cBounds = cBounds
+                    .WithWidth(cBounds.Width - 20)
+                    .WithHeight(cBounds.Height - 20)
+                    .Translate(new Vector(10, 10));
+                context.DrawRectangle(Magenta, null, cBounds);
+                cBounds.Do(screen =>
+                {
+                    screen.Cut(Cut.Bottom,50, (left, rest) =>
+                    {
+                        context.DrawRectangle(Magenta, null, left);
+                        context.DrawRectangle(Cyan, null, rest);
+                    });
+                });
+                context.PushRenderOptions(renderOpts);
                 var txtW = textSize.Width.Ceil();
                 var txtH = textSize.Height.Ceil();
                 var bndW = cBounds.Width;
@@ -120,6 +140,7 @@ public partial class App : Application
                     var xoffs = x * txtW;
                     for (int y = 0; y < numRows; y++)
                     {
+                        continue;
                         Point p = new(xoffs, y * txtH);
                         //if (n%2==0) drawText(ft, p);
                         //else drawText(ft2, p);
@@ -144,7 +165,7 @@ public partial class App : Application
         {
             var border = new Border()
             {
-                BorderThickness = new Thickness(2),
+                BorderThickness = new Thickness(0),
                 BorderBrush = Red,
                 Child = bottom
             };

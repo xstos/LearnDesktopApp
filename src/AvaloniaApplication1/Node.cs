@@ -31,7 +31,6 @@ public class Node
     {
         var cur = this;
         while (cur.Parent != null) cur = Parent;
-
         return cur;
     }
     public static (Node,Node,Node) CreateCursor()
