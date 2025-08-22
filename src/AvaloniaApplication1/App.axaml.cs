@@ -58,7 +58,7 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
-        const int myFontSize = 12;
+        const int myFontSize =24;
 
         var courierNew = "Courier New";
         var renderName = "Render";
@@ -106,7 +106,28 @@ public partial class App : Application
                 context.PushRenderOptions(renderOpts);
                 context.DrawText(ft2,new Point(0,0));
             });
-            
+
+            Func<string, Bitmap> TextAtlas()
+            {
+                var dic = new Dictionary<string, Bitmap>();
+                return s =>
+                {
+                    if (dic.TryGetValue(s, out var bitmap)) return bitmap;
+                    var bmp = new RenderTargetBitmap(
+                        new PixelSize(textSize.Width.Ceil(),textSize.Height.Ceil()),
+                        new Vector(96, 96));
+                    using (var drawingContext = bmp.CreateDrawingContext())
+                    {
+                        drawingContext.PushRenderOptions(renderOpts);
+                        drawingContext.DrawRectangle(Transparent,null,new Rect(0,0,bmp.Size.Width,bmp.Size.Height));
+                        var fmt = MakeFormattedText(s, White);
+                        drawingContext.DrawText(fmt, new Point(0, 0));
+                    }
+                    dic.Add(s, bmp);
+                    return bmp;
+                };
+            }
+            var atlas = TextAtlas();
             c.render = (canvas, context) =>
             {
                 var cBounds = canvas.Bounds;
@@ -132,7 +153,10 @@ public partial class App : Application
                             {
                                 remain2.Cut(Left, textWidth, (left, rest2) =>
                                 {
+                                    
                                     context.DrawRectangle(wheel(), null, left);
+                                    var bmp = atlas("!");
+                                    context.DrawImage(bmp,left);
                                     remain2 = rest2;
                                 });
                             }
