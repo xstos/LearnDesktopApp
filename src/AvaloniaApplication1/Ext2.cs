@@ -38,6 +38,19 @@ public static partial class Ext
     {
         return r.Translate(new Vector(x, y));
     }
+
+    public static Rect WithWidthOffset(this Rect r, double w)
+    {
+        return r.WithWidth(r.Width+w);
+    }
+    public static Rect WithHeightOffset(this Rect r, double h)
+    {
+        return r.WithHeight(r.Height+h);
+    }
+    public static Rect WithSizeOffset(this Rect r, double w, double h)
+    {
+        return r.WithWidthOffset(w).WithHeightOffset(h);
+    }
     public static void Cut(this Rect r, Cut cmd,double a, Action<Rect, Rect> action)
     {
         switch (cmd)

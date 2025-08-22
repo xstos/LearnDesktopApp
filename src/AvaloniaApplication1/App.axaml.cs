@@ -32,6 +32,8 @@ using static Node;
 using ValueOf;
 using OneOf;
 using OneOf.Types;
+using static Cut;
+using Colors = Avalonia.Media.Colors;
 
 public partial class App : Application
 {
@@ -56,11 +58,11 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
-        const int myFontSize = 24;
+        const int myFontSize = 12;
 
         var courierNew = "Courier New";
-        
-        void Ctor(MyCanvas c)
+        var renderName = "Render";
+        void InitCanvas(MyCanvas c)
         {
             var stream = __Assets("hi.png");
             var wb = WriteableBitmap.Decode(stream);
@@ -109,16 +111,40 @@ public partial class App : Application
             {
                 var cBounds = canvas.Bounds;
                 cBounds = cBounds
-                    .WithWidth(cBounds.Width - 20)
-                    .WithHeight(cBounds.Height - 20)
-                    .Translate(new Vector(10, 10));
-                context.DrawRectangle(Magenta, null, cBounds);
+                        //.WithSizeOffset(-20, -20)
+                        //.Translate(10, 10)
+                    ;
+                context.DrawRectangle(DarkBlue, null, cBounds);
+                var wheel = MyColors.Wheel();
                 cBounds.Do(screen =>
                 {
-                    screen.Cut(Cut.Bottom,50, (left, rest) =>
+                    var textHeight = textSize.Height.Ceil();
+                    var textWidth = textSize.Width.Ceil();
+                    var numRows = screen.Height.ToInt() / textHeight;
+                    var numCols = screen.Width.ToInt() / textWidth;
+                    var remain = screen;
+                    for (int i = 0; i < numRows; i++)
                     {
-                        context.DrawRectangle(Magenta, null, left);
-                        context.DrawRectangle(Cyan, null, rest);
+                        remain.Cut(Top, textHeight, (top, rest) =>
+                        {
+                            var remain2 = top;
+                            for (int j = 0; j < numCols; j++)
+                            {
+                                remain2.Cut(Left, textWidth, (left, rest2) =>
+                                {
+                                    context.DrawRectangle(wheel(), null, left);
+                                    remain2 = rest2;
+                                });
+                            }
+                            //context.DrawRectangle(wheel(), null, top);
+                            remain = rest;
+                        });
+                    }
+                    screen.Cut(Bottom,50, (bottom, rest) =>
+                    {
+                        //context.DrawRectangle(Yellow, null, bottom);
+                        
+                        //context.DrawRectangle(DarkBlue, null, rest);
                     });
                 });
                 context.PushRenderOptions(renderOpts);
@@ -129,34 +155,17 @@ public partial class App : Application
                 var (numRows,numCols) = (bndH.ToInt() / txtH, bndW.ToInt() / txtW);
                 
                 var txt = $" w={bndW} h={bndH} tw={txtW} th={txtH} nr={numRows} nc={numCols}";
-                var formattedText = MakeFormattedText(txt, Magenta,12);
+                var formattedText = MakeFormattedText(txt+" "+renderName, Gray,12);
                 var drawText = context.DrawText;
                 
                 drawText(formattedText, new Point(10, 10));
-
-                var n = 0;
-                for (int x = 0; x < numCols; x++)
-                {
-                    var xoffs = x * txtW;
-                    for (int y = 0; y < numRows; y++)
-                    {
-                        continue;
-                        Point p = new(xoffs, y * txtH);
-                        //if (n%2==0) drawText(ft, p);
-                        //else drawText(ft2, p);
-                        if (n%2==0) context.DrawImage(cursorTile,new Rect(p,cursorTile.Size));
-                        else context.DrawImage(cursorTile2,new Rect(p,cursorTile.Size));
-                        n += 1;
-                    }
-
-                    
-                }
+                
                 context.Custom(CDO);
             };
 
         }
 
-        var bottom = new MyCanvas(Ctor);
+        var myCanvas = new MyCanvas(InitCanvas);
         
         var sideList = new ListBox()._Dock(Dock.Left);
         var txt = new TextBlock();
@@ -167,7 +176,7 @@ public partial class App : Application
             {
                 BorderThickness = new Thickness(0),
                 BorderBrush = Red,
-                Child = bottom
+                Child = myCanvas
             };
             return border;
         }
@@ -191,7 +200,6 @@ public partial class App : Application
         //dockPanel.Children.Add(sv);
         //dockPanel.Children.Add(log);
         
-        var seed = 1;
         var (rootOpen, cursor, rootClosed) = CreateCursor();
         txt.FontSize = 30;
         var letterClass = "letter";
@@ -292,10 +300,13 @@ public partial class App : Application
                 $"{shift}+enter" => cursor.InsertAtom("\n"),
                 $"{shift}+delete" => cursor.DeleteCell(),
                 $"{shift}+back" => cursor.BackspaceCell(),
+                $"control+v" => cursor.InsertAtoms(Enumerable.Range(0,40).Select(i=>i+"")._Join("")).First(),
                 _ => cursor.InsertAtom(s.Length < 2 ? Convert.ToChar(s) : s)
             };
-            //Console.WriteLine(s);
+            Console.WriteLine(s);
             //Console.WriteLine(cursor.NodeStr);
+            renderName = cursor.NodeStr;
+            myCanvas.InvalidateVisual();
             refresh();
         };
 
@@ -314,11 +325,11 @@ public partial class App : Application
         void OnTextInput(object? sender, TextInputEventArgs args)
         {
             var topLevel = TopLevel.GetTopLevel(sender as Visual);
-            var el = topLevel.FocusManager.GetFocusedElement();
-            if (el is not Control c) return;
-            var classes = c.GetSelfAndVisualAncestors().SelectMany(c => c.Classes);
+            //var el = topLevel.FocusManager.GetFocusedElement();
+            //if (el is not Control c) return;
+            //var classes = c.GetSelfAndVisualAncestors().SelectMany(c => c.Classes);
             
-            if (!classes.Contains("TextInputParent")) return;
+            //if (!classes.Contains("TextInputParent")) return;
             var key = args.Text;
             onCommand(key);
 
@@ -337,6 +348,7 @@ public partial class App : Application
                 case Key.Right: txt += "right"; break;
                 case Key.Delete: txt += "delete"; break;
                 case Key.OemTilde: txt += "tilde"; break;
+                case Key.V: txt += "v"; break;
                 default: return;
             }
 

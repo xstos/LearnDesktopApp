@@ -64,6 +64,11 @@ public class Node
         return this;
     }
 
+    public IEnumerable<Node> InsertAtoms(string s)
+    {
+        return s.Select(c => InsertAtom(c)).Run();
+    }
+
     public Node ReplaceWith(Node node)
     {
         E(Prev,node,Next);

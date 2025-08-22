@@ -46,6 +46,12 @@ public static partial class Ext
     {
         action(item);
     }
+
+    public static IEnumerable<T> Run<T>(this IEnumerable<T> e)
+    {
+        foreach (var _ in e);
+        return e;
+    }
     public static LinkedListNode<T> SwapWith<T>(this LinkedListNode<T> node2, LinkedListNode<T> node1)
     {
         node1.List.Remove(node1);
