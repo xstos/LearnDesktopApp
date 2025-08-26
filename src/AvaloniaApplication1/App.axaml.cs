@@ -58,7 +58,7 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
-        const int myFontSize =24;
+        const int myFontSize =12;
 
         var courierNew = "Courier New";
         var renderName = "Render";
@@ -107,9 +107,9 @@ public partial class App : Application
                 context.DrawText(ft2,new Point(0,0));
             });
 
-            Func<string, Bitmap> TextAtlas()
+            Func<string, WriteableBitmap> TextAtlas()
             {
-                var dic = new Dictionary<string, Bitmap>();
+                var dic = new Dictionary<string, WriteableBitmap>();
                 return s =>
                 {
                     if (dic.TryGetValue(s, out var bitmap)) return bitmap;
@@ -123,8 +123,9 @@ public partial class App : Application
                         var fmt = MakeFormattedText(s, White);
                         drawingContext.DrawText(fmt, new Point(0, 0));
                     }
-                    dic.Add(s, bmp);
-                    return bmp;
+                    
+                    dic.Add(s, bmp.ToWritableBitmap().Var(out var ret));
+                    return ret;
                 };
             }
             var atlas = TextAtlas();
@@ -137,6 +138,7 @@ public partial class App : Application
                     ;
                 context.DrawRectangle(DarkBlue, null, cBounds);
                 var wheel = MyColors.Wheel();
+                var lorem = Lorem.Text.Enumerator();
                 cBounds.Do(screen =>
                 {
                     var textHeight = textSize.Height.Ceil();
@@ -146,17 +148,19 @@ public partial class App : Application
                     var remain = screen;
                     for (int i = 0; i < numRows; i++)
                     {
+                        var isOddRow = i % 2 == 1;
                         remain.Cut(Top, textHeight, (top, rest) =>
                         {
                             var remain2 = top;
                             for (int j = 0; j < numCols; j++)
                             {
+                                var isOddCol = j % 2 == 1;
                                 remain2.Cut(Left, textWidth, (left, rest2) =>
                                 {
                                     
-                                    context.DrawRectangle(wheel(), null, left);
-                                    var bmp = atlas("!");
-                                    context.DrawImage(bmp,left);
+                                    context.DrawRectangle(wheel().Var(out var clr), null, left);
+                                    var bmp = atlas(lorem()+"");
+                                    context.DrawImage(bmp.Colorize(Colors.Black) ,left);
                                     remain2 = rest2;
                                 });
                             }
