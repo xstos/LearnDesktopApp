@@ -23,7 +23,7 @@ public static partial class Ext
     public static int Floor(this double d) => Math.Floor(d).ToInt();
     public static int Ceil(this double d) => Math.Ceiling(d).ToInt();
 
-    public static int ToInt(this double d) => (int)d;
+    public static int ToInt(this double d) => Convert.ToInt32(d);
 
     public static AppBuilder WithMyConfig(this AppBuilder builder)
     {
@@ -67,6 +67,8 @@ public static partial class Ext
         node2.List.AddAfter(node2, node1);
         return node2;
     }
+
+    
 }
 
 

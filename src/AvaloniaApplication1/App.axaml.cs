@@ -58,7 +58,7 @@ public partial class App : Application
         var dockPanel = new DockPanel();
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
-        const int myFontSize =12;
+        const int myFontSize =48;
 
         var courierNew = "Courier New";
         var renderName = "Render";
@@ -129,8 +129,22 @@ public partial class App : Application
                 };
             }
             var atlas = TextAtlas();
+
+            IPt hover = new IPt() { X = -1, Y = -1 };
+            var arr = new Interact[10000, 10000];
+            c.PointerMoved += (s, e) =>
+            {
+                var (x,y) = e.GetPosition(c).ToInt();
+
+                var (a,b)=arr[x, y].Hover;
+                hover.X = a;
+                hover.Y = b;
+                c.InvalidateMeasure();
+            };
+            var i = 0;
             c.render = (canvas, context) =>
             {
+                Console.WriteLine($"render {i++} {hover.X} {hover.Y}");
                 var cBounds = canvas.Bounds;
                 cBounds = cBounds
                         //.WithSizeOffset(-20, -20)
@@ -139,6 +153,7 @@ public partial class App : Application
                 context.DrawRectangle(DarkBlue, null, cBounds);
                 var wheel = MyColors.Wheel();
                 var lorem = Lorem.Text.Enumerator();
+                
                 cBounds.Do(screen =>
                 {
                     var textHeight = textSize.Height.Ceil();
@@ -146,21 +161,33 @@ public partial class App : Application
                     var numRows = screen.Height.ToInt() / textHeight;
                     var numCols = screen.Width.ToInt() / textWidth;
                     var remain = screen;
-                    for (int i = 0; i < numRows; i++)
+                    for (int rowIndex = 0; rowIndex < numRows; rowIndex++)
                     {
-                        var isOddRow = i % 2 == 1;
-                        remain.Cut(Top, textHeight, (top, rest) =>
+                        var rix = rowIndex;
+                        var isOddRow = rowIndex % 2 == 1;
+                        remain.Cut(Top, textHeight, (rowRect, rest) =>
                         {
-                            var remain2 = top;
-                            for (int j = 0; j < numCols; j++)
+                            var remain2 = rowRect;
+                            for (int colIndex = 0; colIndex < numCols; colIndex++)
                             {
-                                var isOddCol = j % 2 == 1;
-                                remain2.Cut(Left, textWidth, (left, rest2) =>
+                                var cix = colIndex;
+                                var isOddCol = colIndex % 2 == 1;
+                                var isHovered = hover.X==rix && hover.Y==cix;
+                                remain2.Cut(Left, textWidth, (colRect, rest2) =>
                                 {
+                                    foreach (var (x,y) in colRect.Pixels())
+                                    {
+                                        arr[x, y].Hover = (rix, cix);
+                                    }
+                                    var bru = wheel().Var(out var clr);
                                     
-                                    context.DrawRectangle(wheel().Var(out var clr), null, left);
+                                    if (!isHovered)
+                                    {
+                                        context.DrawRectangle(bru, null, colRect);
+                                    }
+
                                     var bmp = atlas(lorem()+"");
-                                    context.DrawImage(bmp.Colorize(Colors.Black) ,left);
+                                    context.DrawImage(bmp.Colorize(Colors.Black) ,colRect);
                                     remain2 = rest2;
                                 });
                             }

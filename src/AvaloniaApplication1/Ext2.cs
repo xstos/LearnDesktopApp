@@ -109,6 +109,21 @@ public static partial class Ext
     {
         return r.WithWidthOffset(w).WithHeightOffset(h);
     }
+
+    public static (int, int) ToInt(this Point p)
+    {
+        return (p.X.ToInt(), p.Y.ToInt());
+    }
+    public static IEnumerable<(int,int)> Pixels(this Rect r)
+    {
+        for (int i = r.Left.ToInt(); i <= r.Right.ToInt(); i++)
+        {
+            for (int j = r.Top.ToInt(); j <= r.Bottom.ToInt(); j++)
+            {
+                yield return (i, j);
+            }
+        }
+    }
     public static void Cut(this Rect r, Cut cmd,double a, Action<Rect, Rect> action)
     {
         switch (cmd)
@@ -144,4 +159,15 @@ public static partial class Ext
         }
     }
 
+}
+
+public struct Interact
+{
+    public (int,int) Hover;
+}
+
+public struct IPt
+{
+    public int X;
+    public int Y;
 }
