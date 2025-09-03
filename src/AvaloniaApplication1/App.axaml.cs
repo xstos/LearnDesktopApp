@@ -175,7 +175,7 @@ public partial class App : Application
                                 var isHovered = hover.X==rix && hover.Y==cix;
                                 remain2.Cut(Left, textWidth, (colRect, rest2) =>
                                 {
-                                    foreach (var (x,y) in colRect.Pixels())
+                                    foreach (var (x,y) in colRect.CoordsXY())
                                     {
                                         arr[x, y].Hover = (rix, cix);
                                     }

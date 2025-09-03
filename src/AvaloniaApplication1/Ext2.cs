@@ -114,13 +114,18 @@ public static partial class Ext
     {
         return (p.X.ToInt(), p.Y.ToInt());
     }
-    public static IEnumerable<(int,int)> Pixels(this Rect r)
+    public static IEnumerable<(int x,int y)> CoordsXY(this Rect r)
     {
-        for (int i = r.Left.ToInt(); i <= r.Right.ToInt(); i++)
+        var li = r.Left.ToInt();
+        var ri = r.Right.ToInt();
+        var ti = r.Top.ToInt();
+        var bi = r.Bottom.ToInt();
+        
+        for (int x = li; x <= ri; x++)
         {
-            for (int j = r.Top.ToInt(); j <= r.Bottom.ToInt(); j++)
+            for (int y = ti; y <= bi; y++)
             {
-                yield return (i, j);
+                yield return (x, y);
             }
         }
     }
