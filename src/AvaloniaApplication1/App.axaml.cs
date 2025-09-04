@@ -131,6 +131,7 @@ public partial class App : Application
             var atlas = TextAtlas();
 
             var hover = (RowIndex:-1, ColIndex:-1);
+
             var arr = new MouseInfo[c.Bounds.Width.ToInt(), c.Bounds.Height.ToInt()];
             var oldBounds = c.Bounds;
             c.PointerMoved += (s, e) =>
@@ -186,7 +187,7 @@ public partial class App : Application
                             
                             foreach (var (x,y) in tileRect.CoordsXY())
                             {
-                                arr[x, y].Hover = (rix: rowIndex, cix: colIndex);
+                                arr[x, y].Hover = (RowIndex: rowIndex, ColIndex: colIndex);
                             }
                             var bru = wheel().Var(out var clr);
                                     
