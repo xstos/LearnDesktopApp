@@ -130,16 +130,19 @@ public partial class App : Application
             }
             var atlas = TextAtlas();
 
-            IPt hover = new IPt() { X = -1, Y = -1 };
+            var hover = (X:-1, Y:-1);
             var arr = new Interact[10000, 10000];
             c.PointerMoved += (s, e) =>
             {
                 var (x,y) = e.GetPosition(c).ToInt();
 
-                var (a,b)=arr[x, y].Hover;
-                hover.X = a;
-                hover.Y = b;
-                c.InvalidateMeasure();
+                var h = arr[x, y].Hover;
+
+                if (hover != h)
+                {
+                    hover = h;
+                    c.InvalidateMeasure();
+                }
             };
             var i = 0;
             c.render = (canvas, context) =>
@@ -163,37 +166,33 @@ public partial class App : Application
                     var remain = screen;
                     for (int rowIndex = 0; rowIndex < numRows; rowIndex++)
                     {
-                        var rix = rowIndex;
                         var isOddRow = rowIndex % 2 == 1;
-                        remain.Cut(Top, textHeight, (rowRect, rest) =>
+                        var (rowRect, rest) = remain.Cut(Top, textHeight);
+                        var line = rowRect;
+                        remain = rest;
+                        
+                        for (int colIndex = 0; colIndex < numCols; colIndex++)
                         {
-                            var remain2 = rowRect;
-                            for (int colIndex = 0; colIndex < numCols; colIndex++)
+                            var isOddCol = colIndex % 2 == 1;
+                            var isHovered = hover.X==rowIndex && hover.Y==colIndex;
+                            var (tileRect, restOfLine) = line.Cut(Left, textWidth);
+                            line = restOfLine;
+                            
+                            foreach (var (x,y) in tileRect.CoordsXY())
                             {
-                                var cix = colIndex;
-                                var isOddCol = colIndex % 2 == 1;
-                                var isHovered = hover.X==rix && hover.Y==cix;
-                                remain2.Cut(Left, textWidth, (colRect, rest2) =>
-                                {
-                                    foreach (var (x,y) in colRect.CoordsXY())
-                                    {
-                                        arr[x, y].Hover = (rix, cix);
-                                    }
-                                    var bru = wheel().Var(out var clr);
-                                    
-                                    if (!isHovered)
-                                    {
-                                        context.DrawRectangle(bru, null, colRect);
-                                    }
-
-                                    var bmp = atlas(lorem()+"");
-                                    context.DrawImage(bmp.Colorize(Colors.Black) ,colRect);
-                                    remain2 = rest2;
-                                });
+                                arr[x, y].Hover = (rix: rowIndex, cix: colIndex);
                             }
-                            //context.DrawRectangle(wheel(), null, top);
-                            remain = rest;
-                        });
+                            var bru = wheel().Var(out var clr);
+                                    
+                            if (!isHovered)
+                            {
+                                context.DrawRectangle(bru, null, tileRect);
+                            }
+
+                            var bmp = atlas(lorem()+"");
+                            context.DrawImage(bmp.Colorize(Colors.Black) ,tileRect);
+                        }
+                        //context.DrawRectangle(wheel(), null, top);
                     }
                     screen.Cut(Bottom,50, (bottom, rest) =>
                     {

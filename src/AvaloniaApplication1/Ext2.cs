@@ -129,7 +129,7 @@ public static partial class Ext
             }
         }
     }
-    public static void Cut(this Rect r, Cut cmd,double a, Action<Rect, Rect> action)
+    public static (Rect,Rect) Cut(this Rect r, Cut cmd,double a, Action<Rect, Rect>? action=null)
     {
         switch (cmd)
         {
@@ -137,42 +137,50 @@ public static partial class Ext
             {
                 var pWidth = r.Width;
                 if (a > pWidth) a = pWidth;
-                action(r.WithWidth(a), r.WithWidth(pWidth-a).Translate(a,0));
+                var r1 = r.WithWidth(a);
+                var r2 = r.WithWidth(pWidth-a).Translate(a,0);
+                action?.Invoke(r1, r2);
+                return  (r1, r2);
                 break;
             }
             case Right:
             {
                 var pWidth = r.Width;
                 if (a > pWidth) a = pWidth;
-                action(r.WithWidth(a).Translate(pWidth-a,0),r.WithWidth(pWidth-a));
+                var r1 = r.WithWidth(a).Translate(pWidth-a,0);
+                var r2 = r.WithWidth(pWidth-a);
+                action?.Invoke(r1,r2);
+                return  (r1, r2);
                 break;
             }
             case Top:
             {
                 var pHeight = r.Height;
                 if (a>pHeight) a = pHeight;
-                action(r.WithHeight(a),r.WithHeight(pHeight-a).Translate(0,a));;
+                var r1 = r.WithHeight(a);
+                var r2 = r.WithHeight(pHeight-a).Translate(0,a);
+                action?.Invoke(r1,r2);
+                return  (r1, r2);
                 break;
             }
             case Bottom:
             {
                 var pHeight = r.Height;
                 if (a>pHeight) a = pHeight;
-                action(r.WithHeight(a).Translate(0,pHeight-a),r.WithHeight(pHeight-a));
+                var r1 = r.WithHeight(a).Translate(0,pHeight-a);
+                var r2 = r.WithHeight(pHeight-a);
+                action?.Invoke(r1,r2);
+                return  (r1, r2);
                 break;
             }
         }
+        throw new Exception();
     }
 
 }
 
 public struct Interact
 {
-    public (int,int) Hover;
+    public (int X,int Y) Hover;
 }
 
-public struct IPt
-{
-    public int X;
-    public int Y;
-}
