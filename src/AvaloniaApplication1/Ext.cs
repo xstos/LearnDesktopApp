@@ -67,7 +67,13 @@ public static partial class Ext
         node2.List.AddAfter(node2, node1);
         return node2;
     }
-
+    public static T SafeGet<T>(this T[,] array, int row, int col, T defaultValue = default)
+    {
+        if (array == null) return defaultValue;
+        if (row < 0 || row >= array.GetLength(0)) return defaultValue;
+        if (col < 0 || col >= array.GetLength(1)) return defaultValue;
+        return array[row, col];
+    }
     
 }
 

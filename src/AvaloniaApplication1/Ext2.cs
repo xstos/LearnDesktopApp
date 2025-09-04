@@ -179,8 +179,8 @@ public static partial class Ext
 
 }
 
-public struct Interact
+public struct MouseInfo
 {
-    public (int X,int Y) Hover;
+    public (int RowIndex, int ColIndex) Hover;
 }
 

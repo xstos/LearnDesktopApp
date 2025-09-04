@@ -130,14 +130,15 @@ public partial class App : Application
             }
             var atlas = TextAtlas();
 
-            var hover = (X:-1, Y:-1);
-            var arr = new Interact[10000, 10000];
+            var hover = (RowIndex:-1, ColIndex:-1);
+            var arr = new MouseInfo[c.Bounds.Width.ToInt(), c.Bounds.Height.ToInt()];
+            var oldBounds = c.Bounds;
             c.PointerMoved += (s, e) =>
             {
                 var (x,y) = e.GetPosition(c).ToInt();
 
-                var h = arr[x, y].Hover;
-
+                var h = arr.SafeGet(x, y).Hover;
+                
                 if (hover != h)
                 {
                     hover = h;
@@ -147,8 +148,13 @@ public partial class App : Application
             var i = 0;
             c.render = (canvas, context) =>
             {
-                Console.WriteLine($"render {i++} {hover.X} {hover.Y}");
+                Console.WriteLine($"render {i++} {hover.RowIndex} {hover.ColIndex}");
                 var cBounds = canvas.Bounds;
+                if (cBounds.Width > oldBounds.Width || cBounds.Height > oldBounds.Height)
+                {
+                    oldBounds = cBounds;
+                    arr = new MouseInfo[c.Bounds.Width.ToInt(), c.Bounds.Height.ToInt()];
+                }
                 cBounds = cBounds
                         //.WithSizeOffset(-20, -20)
                         //.Translate(10, 10)
@@ -174,7 +180,7 @@ public partial class App : Application
                         for (int colIndex = 0; colIndex < numCols; colIndex++)
                         {
                             var isOddCol = colIndex % 2 == 1;
-                            var isHovered = hover.X==rowIndex && hover.Y==colIndex;
+                            var isHovered = hover.RowIndex==rowIndex && hover.ColIndex==colIndex;
                             var (tileRect, restOfLine) = line.Cut(Left, textWidth);
                             line = restOfLine;
                             
