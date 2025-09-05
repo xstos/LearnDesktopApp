@@ -11,6 +11,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Media.Imaging;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Styling;
@@ -59,20 +60,21 @@ public partial class App : Application
         var sv = new ScrollViewer()._Dock(Dock.Right);
 
         const int myFontSize =48;
-
-        var courierNew = "Courier New";
+        //todo figure out why spacing is screwy
+        FontFamilyLoader.LoadFontAssets(AssetsStr("Consolas.ttf").ToUri()).ToList().Var(out var foo);
+        var fontName = "Consolas";
         var renderName = "Render";
         void InitCanvas(MyCanvas c)
         {
             var stream = __Assets("hi.png");
             var wb = WriteableBitmap.Decode(stream);
-            var textSize = MeasureText(cursorSymbol, new FontFamily(courierNew), myFontSize);
+            var textSize = MeasureText(cursorSymbol, new FontFamily(fontName), myFontSize);
             void Draw(string[] lines)
             {
             }
             FormattedText MakeFormattedText(string txt, IBrush? foreground, double emSize=myFontSize)
             {
-                return new FormattedText(txt, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Courier New"), emSize, foreground);
+                return new FormattedText(txt, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface(fontName), emSize, foreground);
             }
             Draw(Lorem.Text.Split(["\r\n", "\r", "\n"], StringSplitOptions.None));
 
@@ -132,14 +134,12 @@ public partial class App : Application
 
             var hover = (RowIndex:-1, ColIndex:-1);
 
-            var arr = new MouseInfo[c.Bounds.Width.ToInt(), c.Bounds.Height.ToInt()];
+            var arr = new CanvasInfo[c.Bounds.Width.ToInt(), c.Bounds.Height.ToInt()];
             var oldBounds = c.Bounds;
             c.PointerMoved += (s, e) =>
             {
                 var (x,y) = e.GetPosition(c).ToInt();
-
                 var h = arr.SafeGet(x, y).Hover;
-                
                 if (hover != h)
                 {
                     hover = h;
@@ -151,10 +151,16 @@ public partial class App : Application
             {
                 Console.WriteLine($"render {i++} {hover.RowIndex} {hover.ColIndex}");
                 var cBounds = canvas.Bounds;
-                if (cBounds.Width > oldBounds.Width || cBounds.Height > oldBounds.Height)
+                var textHeight = textSize.Height.Ceil();
+                var textWidth = textSize.Width.Ceil();
+                var bndW = cBounds.Width;
+                var bndH = cBounds.Height;
+                var numRows = bndH.ToInt() / textHeight;
+                var numCols = bndW.ToInt() / textWidth;
+                if (bndW > oldBounds.Width || bndH > oldBounds.Height)
                 {
                     oldBounds = cBounds;
-                    arr = new MouseInfo[c.Bounds.Width.ToInt(), c.Bounds.Height.ToInt()];
+                    arr = new CanvasInfo[bndW.ToInt(), bndH.ToInt()];
                 }
                 cBounds = cBounds
                         //.WithSizeOffset(-20, -20)
@@ -166,17 +172,13 @@ public partial class App : Application
                 
                 cBounds.Do(screen =>
                 {
-                    var textHeight = textSize.Height.Ceil();
-                    var textWidth = textSize.Width.Ceil();
-                    var numRows = screen.Height.ToInt() / textHeight;
-                    var numCols = screen.Width.ToInt() / textWidth;
                     var remain = screen;
                     for (int rowIndex = 0; rowIndex < numRows; rowIndex++)
                     {
                         var isOddRow = rowIndex % 2 == 1;
                         var (rowRect, rest) = remain.Cut(Top, textHeight);
-                        var line = rowRect;
                         remain = rest;
+                        var line = rowRect;
                         
                         for (int colIndex = 0; colIndex < numCols; colIndex++)
                         {
@@ -185,15 +187,23 @@ public partial class App : Application
                             var (tileRect, restOfLine) = line.Cut(Left, textWidth);
                             line = restOfLine;
                             
+                            var coord = (RowIndex: rowIndex, ColIndex: colIndex);
                             foreach (var (x,y) in tileRect.CoordsXY())
                             {
-                                arr[x, y].Hover = (RowIndex: rowIndex, ColIndex: colIndex);
+                                arr[x, y].Hover = coord;
                             }
                             var bru = wheel().Var(out var clr);
+                            
+                            context.DrawRectangle(bru, null, tileRect);
                                     
-                            if (!isHovered)
+                            if (isHovered)
                             {
-                                context.DrawRectangle(bru, null, tileRect);
+                                context.DrawRectangle(Gray.WithOpacity(0.5), null, tileRect);
+                                
+                            }
+                            else
+                            {
+                                
                             }
 
                             var bmp = atlas(lorem()+"");
@@ -201,21 +211,11 @@ public partial class App : Application
                         }
                         //context.DrawRectangle(wheel(), null, top);
                     }
-                    screen.Cut(Bottom,50, (bottom, rest) =>
-                    {
-                        //context.DrawRectangle(Yellow, null, bottom);
-                        
-                        //context.DrawRectangle(DarkBlue, null, rest);
-                    });
                 });
                 context.PushRenderOptions(renderOpts);
-                var txtW = textSize.Width.Ceil();
-                var txtH = textSize.Height.Ceil();
-                var bndW = cBounds.Width;
-                var bndH = cBounds.Height;
-                var (numRows,numCols) = (bndH.ToInt() / txtH, bndW.ToInt() / txtW);
                 
-                var txt = $" w={bndW} h={bndH} tw={txtW} th={txtH} nr={numRows} nc={numCols}";
+                
+                var txt = $" w={bndW} h={bndH} tw={textWidth} th={textHeight} nr={numRows} nc={numCols}";
                 var formattedText = MakeFormattedText(txt+" "+renderName, Gray,12);
                 var drawText = context.DrawText;
                 
@@ -420,7 +420,7 @@ public partial class App : Application
 
         void Init(dynamic w)
         {
-            w.FontFamily = new FontFamily(courierNew);
+            w.FontFamily = new FontFamily(fontName);
             w.FontWeight = FontWeight.Bold;
             w.FontSize = myFontSize;
             w.Content = content;

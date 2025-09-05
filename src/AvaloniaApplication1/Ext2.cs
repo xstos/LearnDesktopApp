@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using static Cut;
@@ -114,6 +116,11 @@ public static partial class Ext
     {
         return (p.X.ToInt(), p.Y.ToInt());
     }
+
+    public static ImmutableSolidColorBrush WithOpacity(this IImmutableSolidColorBrush brush, double opacity)
+    {
+        return new ImmutableSolidColorBrush(brush.Color,opacity);
+    }
     public static IEnumerable<(int x,int y)> CoordsXY(this Rect r)
     {
         var li = r.Left.ToInt();
@@ -179,7 +186,7 @@ public static partial class Ext
 
 }
 
-public struct MouseInfo
+public struct CanvasInfo
 {
     public (int RowIndex, int ColIndex) Hover;
 }

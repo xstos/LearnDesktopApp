@@ -6,11 +6,20 @@ using Avalonia.Platform;
 using ImpromptuInterface;
 public static class Globals
 {
-    public static Stream __Assets(string name) => AssetLoader.Open(new Uri($"avares://AvaloniaApplication1/Assets/{name}"));
+    public const string avaresAvaloniaapplication1Assets = "avares://AvaloniaApplication1/Assets/";
+
+    public static string AssetsStr(string name) => avaresAvaloniaapplication1Assets + name;
+
+    public static Stream __Assets(string name)
+    {
+        return AssetLoader.Open(new Uri($"{avaresAvaloniaapplication1Assets}{name}"));
+    }
 }
 
 public static partial class Ext
 {
+    public static Uri ToUri(this string s) => new(s);
+
     public static Func<T> Enumerator<T>(this IEnumerable<T> items)
     {
         var enu = items.GetEnumerator();
